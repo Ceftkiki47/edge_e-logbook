@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
+import 'package:connectivity_plus/connectivity_plus.dart'; // SYNC FEATURE: Import paket konektivitas
 import '../database/lora_database.dart';
 import '../models/lora_record.dart';
 
@@ -37,6 +38,9 @@ class ElogbookSyncService {
   bool _autoEnabled = false;
   int _autoIntervalMin = 5;
 
+  // SYNC FEATURE: Variabel untuk menyimpan subscription listener koneksi internet
+  StreamSubscription<List<ConnectivityResult>>? _connectivitySubscription;
+
   SyncStatus get status   => _status;
   SyncResult? get lastResult => _lastResult;
   bool get autoEnabled    => _autoEnabled;
@@ -54,6 +58,25 @@ class ElogbookSyncService {
   bool get isConfigured => baseUrl.isNotEmpty;
 
   String get fullUrl => '${baseUrl.stripTrailing('/')}$endpoint';
+
+  // SYNC FEATURE: Inisialisasi listener untuk memantau perubahan status koneksi internet
+  void initConnectivityListener() {
+    _connectivitySubscription = Connectivity().onConnectivityChanged.listen((List<ConnectivityResult> results) {
+      // SYNC FEATURE: Memeriksa apakah ada koneksi aktif (mobile, wifi, ethernet, atau vpn)
+      final hasInternet = results.any((r) => 
+        r == ConnectivityResult.mobile || 
+        r == ConnectivityResult.wifi || 
+        r == ConnectivityResult.ethernet || 
+        r == ConnectivityResult.vpn
+      );
+
+      // SYNC FEATURE: Jika internet tersedia dan url api sudah dikonfigurasi, jalankan sync otomatis
+      if (hasInternet && isConfigured) {
+        debugPrint('[Sync] Koneksi internet pulih, memicu sinkronisasi otomatis...');
+        syncNow();
+      }
+    });
+  }
 
   // ── Sync manual ───────────────────────────────────────────────────────────
   /// Push semua record yang belum di-sync (synced = 0) ke elogbook.
@@ -223,6 +246,8 @@ class ElogbookSyncService {
 
   void dispose() {
     stopAutoSync();
+    // SYNC FEATURE: Pastikan subscription di-cancel untuk menghindari memory leak
+    _connectivitySubscription?.cancel();
     _statusCtrl.close();
   }
 }

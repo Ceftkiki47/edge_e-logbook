@@ -46,6 +46,9 @@ class LoraProvider extends ChangeNotifier {
     sync.statusStream.listen((_) => notifyListeners());
     _serial.packetStream.listen(_onPacketReceived);
 
+    // SYNC FEATURE: Inisialisasi listener koneksi internet untuk auto-sync
+    sync.initConnectivityListener();
+
     refreshPorts();
     notifyListeners();
   }
