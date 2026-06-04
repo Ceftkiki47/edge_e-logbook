@@ -201,7 +201,7 @@ class _DatabaseScreenState extends State<DatabaseScreen> {
               SizedBox(width: 90,  child: _Th('Lat')),
               SizedBox(width: 90,  child: _Th('Lng')),
               SizedBox(width: 80,  child: _Th('Suhu Air')),
-              SizedBox(width: 90,  child: _Th('Kelembaban')),
+              SizedBox(width: 90,  child: _Th('Kelembapan')),
               SizedBox(width: 70,  child: _Th('Berat')),
               SizedBox(width: 60,  child: _Th('Interval')),
               SizedBox(width: 75,  child: _Th('RSSI')),
