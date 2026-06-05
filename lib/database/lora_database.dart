@@ -111,6 +111,7 @@ class LoraDatabase {
     DateTime? from,
     DateTime? to,
     bool unsyncedOnly = false,
+    bool ascending = false,
   }) async {
     final db = await database;
 
@@ -137,7 +138,7 @@ class LoraDatabase {
       _table,
       where: where.isEmpty ? null : where.join(' AND '),
       whereArgs: args.isEmpty ? null : args,
-      orderBy: 'received_at DESC',
+      orderBy: ascending ? 'received_at ASC' : 'received_at DESC',
       limit: limit,
       offset: offset,
     );

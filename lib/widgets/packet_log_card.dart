@@ -5,6 +5,7 @@ import '../models/lora_record.dart';
 import '../providers/lora_provider.dart';
 import '../theme/app_colors.dart';
 import 'confirm_dialog.dart';
+import '../screens/packets_screen.dart';
 
 class PacketLogCard extends StatelessWidget {
   const PacketLogCard({super.key});
@@ -34,6 +35,25 @@ class PacketLogCard extends StatelessWidget {
                   color: AppColors.textPrimary,
                 )),
             const Spacer(),
+            Builder(
+              builder: (ctx) => OutlinedButton(
+                onPressed: () {
+                  Navigator.push(
+                    ctx,
+                    MaterialPageRoute(builder: (_) => const PacketsScreen()),
+                  );
+                },
+                style: OutlinedButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 0),
+                  minimumSize: const Size(0, 24),
+                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                  side: const BorderSide(color: AppColors.border, width: 0.5),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
+                ),
+                child: const Text('Selengkapnya', style: TextStyle(fontSize: 10.5, color: AppColors.textSecondary)),
+              ),
+            ),
+            const SizedBox(width: 8),
             Consumer<LoraProvider>(
               builder: (ctx, prov, child) => Tooltip(
                 message: 'Hapus log tampilan',
@@ -80,7 +100,6 @@ class PacketLogCard extends StatelessWidget {
               }
               final fmt = DateFormat('HH:mm:ss.SSS');
               return ListView.builder(
-                reverse: true,
                 padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                 itemCount: prov.packets.length,
                 itemBuilder: (_, i) => _LogRow(record: prov.packets[i], fmt: fmt),

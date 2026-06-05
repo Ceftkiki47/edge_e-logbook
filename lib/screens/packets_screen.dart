@@ -13,17 +13,20 @@ class PacketsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(children: [
-      const AppTopbar(title: 'Paket Masuk'),
-      Expanded(
-        child: Consumer<LoraProvider>(
-          builder: (_, prov, __) => Column(children: [
-            _toolbar(prov),
-            Expanded(child: _packetList(context, prov.packets)),
-          ]),
+    return Scaffold(
+      backgroundColor: AppColors.background,
+      body: Column(children: [
+        const AppTopbar(title: 'Paket Masuk'),
+        Expanded(
+          child: Consumer<LoraProvider>(
+            builder: (_, prov, __) => Column(children: [
+              _toolbar(prov),
+              Expanded(child: _packetList(context, prov.packets)),
+            ]),
+          ),
         ),
-      ),
-    ]);
+      ]),
+    );
   }
 
   Widget _toolbar(LoraProvider prov) => Container(

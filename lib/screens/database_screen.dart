@@ -250,27 +250,55 @@ class _DatabaseScreenState extends State<DatabaseScreen> {
 
   Widget _pagination(LoraProvider prov) {
     final total = prov.stats?.totalPackets ?? 0;
+    if (total == 0) return const SizedBox.shrink();
+
     final page  = _offset ~/ _pageSize + 1;
     final pages = (total / _pageSize).ceil().clamp(1, 9999);
+    final currentStart = _records.isEmpty ? 0 : total - _offset;
+    final currentEnd = _records.isEmpty ? 0 : total - _offset - _records.length + 1;
+
+    int startPage = (page - 2).clamp(1, pages);
+    int endPage = (page + 2).clamp(1, pages);
+    
+    if (endPage - startPage < 4) {
+      if (startPage == 1) {
+        endPage = (startPage + 4).clamp(1, pages);
+      } else if (endPage == pages) {
+        startPage = (endPage - 4).clamp(1, pages);
+      }
+    }
+
+    List<Widget> pageButtons = [];
+    for (int p = startPage; p <= endPage; p++) {
+      pageButtons.add(_pageNumberBtn(p, p == page));
+    }
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       color: AppColors.surface,
-      child: Row(children: [
-        Text('${_offset + 1}–${(_offset + _records.length)} dari $total',
-            style: const TextStyle(fontSize: 11.5, color: AppColors.textSecondary)),
-        const Spacer(),
-        _pageBtn(Icons.first_page, _offset > 0, () => _load(offset: 0)),
-        _pageBtn(Icons.chevron_left, _offset > 0, () => _load(offset: (_offset - _pageSize).clamp(0, 99999))),
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 8),
-          child: Text('$page / $pages',
-              style: const TextStyle(fontSize: 11.5, color: AppColors.textPrimary)),
-        ),
-        _pageBtn(Icons.chevron_right, _offset + _pageSize < total, () => _load(offset: _offset + _pageSize)),
-        _pageBtn(Icons.last_page, _offset + _pageSize < total, () => _load(offset: ((pages - 1) * _pageSize))),
-      ]),
-    );
+      child: Stack(
+        alignment: Alignment.center,
+        children: [
+          Align(
+            alignment: Alignment.centerLeft,
+            child: Text('Page $page ($currentStart–$currentEnd) dari $total',
+                style: const TextStyle(fontSize: 11.5, color: AppColors.textSecondary)),
+          ),
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              _pageBtn(Icons.first_page, _offset > 0, () => _load(offset: 0)),
+              _pageBtn(Icons.chevron_left, _offset > 0, () => _load(offset: (_offset - _pageSize).clamp(0, 99999))),
+              const SizedBox(width: 4),
+              ...pageButtons,
+              const SizedBox(width: 4),
+              _pageBtn(Icons.chevron_right, _offset + _pageSize < total, () => _load(offset: _offset + _pageSize)),
+              _pageBtn(Icons.last_page, _offset + _pageSize < total, () => _load(offset: ((pages - 1) * _pageSize))),
+            ],
+          ),
+        ],
+      ),
+     );
   }
 
   Widget _pageBtn(IconData icon, bool enabled, VoidCallback onTap) => InkWell(
@@ -279,6 +307,31 @@ class _DatabaseScreenState extends State<DatabaseScreen> {
         child: Padding(
           padding: const EdgeInsets.all(4),
           child: Icon(icon, size: 16, color: enabled ? AppColors.textSecondary : AppColors.textMuted),
+        ),
+      );
+
+  Widget _pageNumberBtn(int p, bool isActive) => InkWell(
+        onTap: isActive ? null : () => _load(offset: (p - 1) * _pageSize),
+        borderRadius: BorderRadius.circular(4),
+        child: Container(
+          margin: const EdgeInsets.symmetric(horizontal: 2),
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+          decoration: BoxDecoration(
+            color: isActive ? AppColors.blueBg : Colors.transparent,
+            borderRadius: BorderRadius.circular(4),
+            border: Border.all(
+              color: isActive ? AppColors.blue : Colors.transparent,
+              width: 0.5,
+            ),
+          ),
+          child: Text(
+            '$p',
+            style: TextStyle(
+              fontSize: 11.5,
+              fontWeight: isActive ? FontWeight.w700 : FontWeight.normal,
+              color: isActive ? AppColors.blue : AppColors.textPrimary,
+            ),
+          ),
         ),
       );
 

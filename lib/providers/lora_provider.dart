@@ -107,8 +107,9 @@ class LoraProvider extends ChangeNotifier {
     String? type,
     DateTime? from,
     DateTime? to,
+    bool ascending = false,
   }) =>
-      _db.getAll(limit: limit, offset: offset, type: type, from: from, to: to);
+      _db.getAll(limit: limit, offset: offset, type: type, from: from, to: to, ascending: ascending);
 
   Future<void> clearDb() async {
     await _db.clearAll();

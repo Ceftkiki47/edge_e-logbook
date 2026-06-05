@@ -45,6 +45,16 @@ class _AppTopbarState extends State<AppTopbar> {
         border: Border(bottom: BorderSide(color: AppColors.border, width: 0.5)),
       ),
       child: Row(children: [
+        if (Navigator.canPop(context)) ...[
+          InkWell(
+            onTap: () => Navigator.pop(context),
+            borderRadius: BorderRadius.circular(20),
+            child: const Padding(
+              padding: EdgeInsets.only(right: 12),
+              child: Icon(Icons.arrow_back, size: 18, color: AppColors.textPrimary),
+            ),
+          ),
+        ],
         Text(widget.title,
             style: const TextStyle(
               fontSize: 16,
