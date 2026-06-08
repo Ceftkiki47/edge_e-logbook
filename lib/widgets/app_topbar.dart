@@ -39,8 +39,8 @@ class _AppTopbarState extends State<AppTopbar> {
 
     return Container(
       height: 60,
-      padding: const EdgeInsets.symmetric(horizontal: 20),
-      decoration: const BoxDecoration(
+      padding: EdgeInsets.symmetric(horizontal: 20),
+      decoration: BoxDecoration(
         color: AppColors.surface,
         border: Border(bottom: BorderSide(color: AppColors.border, width: 0.5)),
       ),
@@ -49,14 +49,14 @@ class _AppTopbarState extends State<AppTopbar> {
           InkWell(
             onTap: () => Navigator.pop(context),
             borderRadius: BorderRadius.circular(20),
-            child: const Padding(
+            child: Padding(
               padding: EdgeInsets.only(right: 12),
               child: Icon(Icons.arrow_back, size: 18, color: AppColors.textPrimary),
             ),
           ),
         ],
         Text(widget.title,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.w700,
               color: AppColors.textPrimary,
@@ -68,7 +68,7 @@ class _AppTopbarState extends State<AppTopbar> {
           builder: (_, prov, __) {
             final connected = prov.isConnected;
             return Container(
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+              padding: EdgeInsets.symmetric(horizontal: 10, vertical: 5),
               decoration: BoxDecoration(
                 color: connected ? AppColors.onlineBg : AppColors.surfaceAlt,
                 borderRadius: BorderRadius.circular(99),
@@ -85,7 +85,7 @@ class _AppTopbarState extends State<AppTopbar> {
                     color: connected ? AppColors.online : AppColors.textMuted,
                   ),
                 ),
-                const SizedBox(width: 6),
+                SizedBox(width: 6),
                 Text(
                   connected ? 'Online' : 'Offline',
                   style: TextStyle(
@@ -99,7 +99,7 @@ class _AppTopbarState extends State<AppTopbar> {
           },
         ),
 
-        const SizedBox(width: 16),
+        SizedBox(width: 16),
 
         // Jam + tanggal
         Column(
@@ -107,14 +107,14 @@ class _AppTopbarState extends State<AppTopbar> {
           crossAxisAlignment: CrossAxisAlignment.end,
           children: [
             Text(timeFmt.format(_now),
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 15,
                   fontWeight: FontWeight.w700,
                   fontFamily: 'monospace',
                   color: AppColors.textPrimary,
                 )),
             Text('${dateFmt.format(_now)} WIB',
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 10,
                   color: AppColors.textMuted,
                 )),

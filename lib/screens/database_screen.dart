@@ -22,6 +22,11 @@ class _DatabaseScreenState extends State<DatabaseScreen> {
   String? _dbPath;
   int _lastTotal = -1; // track perubahan total untuk auto-refresh
 
+  String _searchQuery = '';
+  String _filterType = 'all';
+  bool _unsyncedOnly = false;
+  bool _showFilter = false;
+
   @override
   void initState() {
     super.initState();
@@ -44,7 +49,13 @@ class _DatabaseScreenState extends State<DatabaseScreen> {
   Future<void> _load({int offset = 0}) async {
     setState(() { _loading = true; _offset = offset; });
     final prov = context.read<LoraProvider>();
-    final rows = await prov.queryDb(limit: _pageSize, offset: offset);
+    final rows = await prov.queryDb(
+      limit: _pageSize, 
+      offset: offset,
+      searchQuery: _searchQuery,
+      type: _filterType,
+      unsyncedOnly: _unsyncedOnly,
+    );
     _dbPath ??= prov.dbPath;
     setState(() { _records = rows; _loading = false; });
   }
@@ -57,6 +68,7 @@ class _DatabaseScreenState extends State<DatabaseScreen> {
         child: Consumer<LoraProvider>(
           builder: (_, prov, __) => Column(children: [
             _toolbar(prov),
+            if (_showFilter) _filterPanel(),
             _statsRow(prov),
             Expanded(child: _loading ? _loadingWidget() : _table()),
             _pagination(prov),
@@ -67,7 +79,7 @@ class _DatabaseScreenState extends State<DatabaseScreen> {
   }
 
   Widget _toolbar(LoraProvider prov) => Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+        padding: EdgeInsets.symmetric(horizontal: 16, vertical: 10),
         color: AppColors.surface,
         child: Row(children: [
           // Auto-save toggle
@@ -77,7 +89,7 @@ class _DatabaseScreenState extends State<DatabaseScreen> {
             prov.autoSave ? AppColors.onlineBg : AppColors.surfaceAlt,
             prov.autoSave ? AppColors.onlineSub : AppColors.textMuted,
           ),
-          const SizedBox(width: 8),
+          SizedBox(width: 8),
           Switch(
             value: prov.autoSave,
             onChanged: (v) {
@@ -102,7 +114,7 @@ class _DatabaseScreenState extends State<DatabaseScreen> {
                     : AppColors.amber,
                 width: 0.5,
               ),
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+              padding: EdgeInsets.symmetric(horizontal: 10, vertical: 6),
               minimumSize: Size.zero,
               tapTargetSize: MaterialTapTargetSize.shrinkWrap,
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
@@ -110,10 +122,10 @@ class _DatabaseScreenState extends State<DatabaseScreen> {
             onPressed: (prov.stats?.totalPackets ?? 0) == 0
                 ? null
                 : () => _confirmDeleteOld(context, prov),
-            icon: const Icon(Icons.history, size: 14),
-            label: const Text('Hapus Data Lama', style: TextStyle(fontSize: 11)),
+            icon: Icon(Icons.history, size: 14),
+            label: Text('Hapus Data Lama', style: TextStyle(fontSize: 11)),
           ),
-          const SizedBox(width: 8),
+          SizedBox(width: 8),
           OutlinedButton.icon(
             style: OutlinedButton.styleFrom(
               foregroundColor: (prov.stats?.totalPackets ?? 0) == 0
@@ -125,7 +137,7 @@ class _DatabaseScreenState extends State<DatabaseScreen> {
                     : AppColors.danger,
                 width: 0.5,
               ),
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+              padding: EdgeInsets.symmetric(horizontal: 10, vertical: 6),
               minimumSize: Size.zero,
               tapTargetSize: MaterialTapTargetSize.shrinkWrap,
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
@@ -133,14 +145,98 @@ class _DatabaseScreenState extends State<DatabaseScreen> {
             onPressed: (prov.stats?.totalPackets ?? 0) == 0
                 ? null
                 : () => _confirmClearAll(context, prov),
-            icon: const Icon(Icons.delete_forever, size: 14),
-            label: const Text('Hapus Semua', style: TextStyle(fontSize: 11)),
+            icon: Icon(Icons.delete_forever, size: 14),
+            label: Text('Hapus Semua', style: TextStyle(fontSize: 11)),
           ),
-          const SizedBox(width: 8),
+          SizedBox(width: 8),
+          IconButton(
+            onPressed: () => setState(() => _showFilter = !_showFilter),
+            icon: Icon(Icons.filter_list, size: 16, color: _showFilter ? AppColors.blue : AppColors.textMuted),
+            tooltip: 'Filter & Cari',
+          ),
           IconButton(
             onPressed: () => _load(offset: _offset),
-            icon: const Icon(Icons.refresh, size: 16, color: AppColors.textMuted),
+            icon: Icon(Icons.refresh, size: 16, color: AppColors.textMuted),
             tooltip: 'Refresh',
+          ),
+        ]),
+      );
+
+  Widget _filterPanel() => Container(
+        padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        color: AppColors.surface,
+        child: Row(children: [
+          // Search Box
+          Expanded(
+            flex: 2,
+            child: SizedBox(
+              height: 32,
+              child: TextField(
+                style: TextStyle(fontSize: 12),
+                decoration: InputDecoration(
+                  hintText: 'Cari trail, uuid, data...',
+                  hintStyle: TextStyle(fontSize: 12, color: AppColors.textMuted),
+                  prefixIcon: Icon(Icons.search, size: 14, color: AppColors.textMuted),
+                  contentPadding: EdgeInsets.symmetric(horizontal: 8, vertical: 0),
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(6), borderSide: BorderSide(color: AppColors.border)),
+                  enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(6), borderSide: BorderSide(color: AppColors.border)),
+                  focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(6), borderSide: BorderSide(color: AppColors.blue)),
+                ),
+                onChanged: (val) {
+                  _searchQuery = val;
+                  _load(offset: 0);
+                },
+              ),
+            ),
+          ),
+          SizedBox(width: 12),
+          // Filter Type Dropdown
+          Text('Tipe: ', style: TextStyle(fontSize: 11, color: AppColors.textSecondary)),
+          SizedBox(
+            height: 32,
+            child: DropdownButtonHideUnderline(
+              child: DropdownButton<String>(
+                value: _filterType,
+                style: TextStyle(fontSize: 12, color: AppColors.textPrimary),
+                dropdownColor: AppColors.surfaceAlt,
+                icon: Icon(Icons.arrow_drop_down, size: 16, color: AppColors.textSecondary),
+                items: const [
+                  DropdownMenuItem(value: 'all', child: Text('Semua')),
+                  DropdownMenuItem(value: 'rx', child: Text('RX (Diterima)')),
+                  DropdownMenuItem(value: 'error', child: Text('Error')),
+                  DropdownMenuItem(value: 'system', child: Text('System')),
+                ],
+                onChanged: (val) {
+                  if (val != null) {
+                    setState(() => _filterType = val);
+                    _load(offset: 0);
+                  }
+                },
+              ),
+            ),
+          ),
+          SizedBox(width: 12),
+          // Unsynced Only Checkbox
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              SizedBox(
+                height: 24,
+                width: 24,
+                child: Checkbox(
+                  value: _unsyncedOnly,
+                  activeColor: AppColors.blue,
+                  side: BorderSide(color: AppColors.border, width: 1.5),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
+                  onChanged: (val) {
+                    setState(() => _unsyncedOnly = val ?? false);
+                    _load(offset: 0);
+                  },
+                ),
+              ),
+              SizedBox(width: 4),
+              Text('Belum Sync', style: TextStyle(fontSize: 11, color: AppColors.textSecondary)),
+            ],
           ),
         ]),
       );
@@ -148,23 +244,23 @@ class _DatabaseScreenState extends State<DatabaseScreen> {
   Widget _statsRow(LoraProvider prov) {
     final s = prov.stats;
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       color: AppColors.surfaceAlt,
       child: Row(children: [
         _statChip('Total', '${s?.totalPackets ?? 0}', AppColors.textSecondary),
-        const SizedBox(width: 16),
+        SizedBox(width: 16),
         _statChip('RX', '${s?.rxPackets ?? 0}', AppColors.onlineSub),
-        const SizedBox(width: 16),
+        SizedBox(width: 16),
         _statChip('Error', '${s?.errorPackets ?? 0}', AppColors.danger),
-        const SizedBox(width: 16),
+        SizedBox(width: 16),
         _statChip('Unsynced', '${s?.unsyncedCount ?? 0}', AppColors.amber),
         const Spacer(),
         if (_dbPath != null)
           Row(children: [
-            const Icon(Icons.folder_outlined, size: 12, color: AppColors.textMuted),
-            const SizedBox(width: 4),
+            Icon(Icons.folder_outlined, size: 12, color: AppColors.textMuted),
+            SizedBox(width: 4),
             Text(_dbPath!,
-                style: const TextStyle(fontSize: 10, color: AppColors.textMuted, fontFamily: 'monospace')),
+                style: TextStyle(fontSize: 10, color: AppColors.textMuted, fontFamily: 'monospace')),
           ]),
       ]),
     );
@@ -172,7 +268,7 @@ class _DatabaseScreenState extends State<DatabaseScreen> {
 
   Widget _table() {
     if (_records.isEmpty) {
-      return const Center(
+      return Center(
         child: Column(mainAxisSize: MainAxisSize.min, children: [
           Icon(Icons.storage_outlined, size: 40, color: AppColors.textMuted),
           SizedBox(height: 12),
@@ -192,9 +288,9 @@ class _DatabaseScreenState extends State<DatabaseScreen> {
         child: Column(children: [
           // Header
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
             color: AppColors.surfaceAlt,
-            child: const Row(children: [
+            child: Row(children: [
               SizedBox(width: 45,  child: _Th('ID')),
               SizedBox(width: 70,  child: _Th('Tipe')),
               SizedBox(width: 150, child: _Th('Trail')),
@@ -218,7 +314,7 @@ class _DatabaseScreenState extends State<DatabaseScreen> {
                 final r      = _records[i];
                 final isEven = i % 2 == 0;
                 return Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+                  padding: EdgeInsets.symmetric(horizontal: 12, vertical: 7),
                   color: isEven ? AppColors.surface : AppColors.surfaceAlt,
                   child: Row(children: [
                     SizedBox(width: 45,  child: _Td('${r.id ?? '-'}')),
@@ -250,7 +346,7 @@ class _DatabaseScreenState extends State<DatabaseScreen> {
 
   Widget _pagination(LoraProvider prov) {
     final total = prov.stats?.totalPackets ?? 0;
-    if (total == 0) return const SizedBox.shrink();
+    if (total == 0) return SizedBox.shrink();
 
     final page  = _offset ~/ _pageSize + 1;
     final pages = (total / _pageSize).ceil().clamp(1, 9999);
@@ -274,7 +370,7 @@ class _DatabaseScreenState extends State<DatabaseScreen> {
     }
 
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       color: AppColors.surface,
       child: Stack(
         alignment: Alignment.center,
@@ -282,16 +378,16 @@ class _DatabaseScreenState extends State<DatabaseScreen> {
           Align(
             alignment: Alignment.centerLeft,
             child: Text('Page $page ($currentStart–$currentEnd) dari $total',
-                style: const TextStyle(fontSize: 11.5, color: AppColors.textSecondary)),
+                style: TextStyle(fontSize: 11.5, color: AppColors.textSecondary)),
           ),
           Row(
             mainAxisSize: MainAxisSize.min,
             children: [
               _pageBtn(Icons.first_page, _offset > 0, () => _load(offset: 0)),
               _pageBtn(Icons.chevron_left, _offset > 0, () => _load(offset: (_offset - _pageSize).clamp(0, 99999))),
-              const SizedBox(width: 4),
+              SizedBox(width: 4),
               ...pageButtons,
-              const SizedBox(width: 4),
+              SizedBox(width: 4),
               _pageBtn(Icons.chevron_right, _offset + _pageSize < total, () => _load(offset: _offset + _pageSize)),
               _pageBtn(Icons.last_page, _offset + _pageSize < total, () => _load(offset: ((pages - 1) * _pageSize))),
             ],
@@ -305,7 +401,7 @@ class _DatabaseScreenState extends State<DatabaseScreen> {
         onTap: enabled ? onTap : null,
         borderRadius: BorderRadius.circular(4),
         child: Padding(
-          padding: const EdgeInsets.all(4),
+          padding: EdgeInsets.all(4),
           child: Icon(icon, size: 16, color: enabled ? AppColors.textSecondary : AppColors.textMuted),
         ),
       );
@@ -314,8 +410,8 @@ class _DatabaseScreenState extends State<DatabaseScreen> {
         onTap: isActive ? null : () => _load(offset: (p - 1) * _pageSize),
         borderRadius: BorderRadius.circular(4),
         child: Container(
-          margin: const EdgeInsets.symmetric(horizontal: 2),
-          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+          margin: EdgeInsets.symmetric(horizontal: 2),
+          padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
           decoration: BoxDecoration(
             color: isActive ? AppColors.blueBg : Colors.transparent,
             borderRadius: BorderRadius.circular(4),
@@ -335,22 +431,22 @@ class _DatabaseScreenState extends State<DatabaseScreen> {
         ),
       );
 
-  Widget _loadingWidget() => const Center(
+  Widget _loadingWidget() => Center(
         child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.blue),
       );
 
   Widget _badge(IconData icon, String label, Color bg, Color fg) => Container(
-        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+        padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
         decoration: BoxDecoration(color: bg, borderRadius: BorderRadius.circular(99)),
         child: Row(mainAxisSize: MainAxisSize.min, children: [
           Icon(icon, size: 11, color: fg),
-          const SizedBox(width: 4),
+          SizedBox(width: 4),
           Text(label, style: TextStyle(fontSize: 10.5, fontWeight: FontWeight.w600, color: fg)),
         ]),
       );
 
   Widget _statChip(String label, String value, Color color) => Row(children: [
-        Text('$label: ', style: const TextStyle(fontSize: 11, color: AppColors.textMuted)),
+        Text('$label: ', style: TextStyle(fontSize: 11, color: AppColors.textMuted)),
         Text(value, style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: color)),
       ]);
 
@@ -395,10 +491,10 @@ class _DatabaseScreenState extends State<DatabaseScreen> {
         ScaffoldMessenger.of(ctx).showSnackBar(SnackBar(
           backgroundColor: AppColors.onlineBg,
           content: Row(children: [
-            const Icon(Icons.check_circle_outline, size: 16, color: AppColors.onlineSub),
-            const SizedBox(width: 8),
+            Icon(Icons.check_circle_outline, size: 16, color: AppColors.onlineSub),
+            SizedBox(width: 8),
             Text('$n baris dihapus',
-                style: const TextStyle(color: AppColors.onlineSub)),
+                style: TextStyle(color: AppColors.onlineSub)),
           ]),
           duration: const Duration(seconds: 2),
         ));
@@ -421,7 +517,7 @@ class _DatabaseScreenState extends State<DatabaseScreen> {
       await prov.clearDb();
       await _load(offset: 0);
       if (ctx.mounted) {
-        ScaffoldMessenger.of(ctx).showSnackBar(const SnackBar(
+        ScaffoldMessenger.of(ctx).showSnackBar(SnackBar(
           backgroundColor: AppColors.dangerBg,
           content: Row(children: [
             Icon(Icons.delete_forever, size: 16, color: AppColors.danger),
@@ -441,7 +537,7 @@ class _Th extends StatelessWidget {
   const _Th(this.text);
   @override
   Widget build(BuildContext context) => Text(text,
-      style: const TextStyle(fontSize: 10.5, fontWeight: FontWeight.w700, color: AppColors.textMuted));
+      style: TextStyle(fontSize: 10.5, fontWeight: FontWeight.w700, color: AppColors.textMuted));
 }
 
 class _Td extends StatelessWidget {
@@ -473,7 +569,7 @@ class _TypeBadge extends StatelessWidget {
       _       => (AppColors.tagSysBg, AppColors.tagSysText, 'SYS'),
     };
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+      padding: EdgeInsets.symmetric(horizontal: 6, vertical: 2),
       decoration: BoxDecoration(color: bg, borderRadius: BorderRadius.circular(99)),
       child: Text(label, style: TextStyle(fontSize: 9, fontWeight: FontWeight.w700, color: fg)),
     );

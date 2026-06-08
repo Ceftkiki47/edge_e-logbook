@@ -5,6 +5,7 @@ import '../screens/database_screen.dart';
 import '../screens/api_screen.dart';
 import '../screens/port_screen.dart';
 import '../screens/placeholder_screen.dart';
+import '../screens/settings_screen.dart';
 import '../widgets/app_sidebar.dart';
 
 class MainShell extends StatefulWidget {
@@ -38,11 +39,7 @@ class _MainShellState extends State<MainShell> {
       icon: Icons.notifications_outlined,
       description: 'Aturan notifikasi berdasarkan nilai sensor.',
     ),
-    PlaceholderScreen(       // 8
-      title: 'Pengaturan',
-      icon: Icons.tune_outlined,
-      description: 'Preferensi tampilan dan aplikasi.',
-    ),
+    SettingsScreen(),        // 8
   ];
 
   @override

@@ -30,7 +30,7 @@ Future<bool> showConfirmDialog(
       child: ConstrainedBox(
         constraints: const BoxConstraints(maxWidth: 400),
         child: Padding(
-          padding: const EdgeInsets.all(24),
+          padding: EdgeInsets.all(24),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -45,21 +45,21 @@ Future<bool> showConfirmDialog(
                   ),
                   child: Icon(iconData, size: 20, color: confirmColor),
                 ),
-                const SizedBox(width: 12),
+                SizedBox(width: 12),
                 Expanded(
                   child: Text(title,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 15,
                         fontWeight: FontWeight.w700,
                         color: AppColors.textPrimary,
                       )),
                 ),
               ]),
-              const SizedBox(height: 16),
+              SizedBox(height: 16),
 
               // ── Message ───────────────────────────────────────────────────
               Text(message,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 13,
                     color: AppColors.textSecondary,
                     height: 1.5,
@@ -67,10 +67,10 @@ Future<bool> showConfirmDialog(
 
               // ── Count badge ───────────────────────────────────────────────
               if (countLabel != null) ...[
-                const SizedBox(height: 10),
+                SizedBox(height: 10),
                 Container(
                   width: double.infinity,
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                   decoration: BoxDecoration(
                     color: confirmBg,
                     borderRadius: BorderRadius.circular(8),
@@ -81,7 +81,7 @@ Future<bool> showConfirmDialog(
                   ),
                   child: Row(children: [
                     Icon(Icons.info_outline, size: 13, color: confirmColor),
-                    const SizedBox(width: 7),
+                    SizedBox(width: 7),
                     Text(countLabel,
                         style: TextStyle(
                           fontSize: 12,
@@ -94,11 +94,11 @@ Future<bool> showConfirmDialog(
 
               // ── Extra detail widget ───────────────────────────────────────
               if (detail != null) ...[
-                const SizedBox(height: 12),
+                SizedBox(height: 12),
                 detail,
               ],
 
-              const SizedBox(height: 24),
+              SizedBox(height: 24),
 
               // ── Tombol ────────────────────────────────────────────────────
               Row(children: [
@@ -107,17 +107,17 @@ Future<bool> showConfirmDialog(
                   child: OutlinedButton(
                     style: OutlinedButton.styleFrom(
                       foregroundColor: AppColors.textSecondary,
-                      side: const BorderSide(color: AppColors.border),
+                      side: BorderSide(color: AppColors.border),
                       minimumSize: const Size(0, 40),
                       shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(8)),
                     ),
                     onPressed: () => Navigator.pop(ctx, false),
                     child: Text(cancelLabel,
-                        style: const TextStyle(fontSize: 13)),
+                        style: TextStyle(fontSize: 13)),
                   ),
                 ),
-                const SizedBox(width: 10),
+                SizedBox(width: 10),
                 // Konfirmasi
                 Expanded(
                   child: ElevatedButton(
@@ -131,7 +131,7 @@ Future<bool> showConfirmDialog(
                     ),
                     onPressed: () => Navigator.pop(ctx, true),
                     child: Text(confirmLabel,
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 13,
                           fontWeight: FontWeight.w600,
                         )),

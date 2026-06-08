@@ -30,16 +30,16 @@ class PacketsScreen extends StatelessWidget {
   }
 
   Widget _toolbar(LoraProvider prov) => Container(
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+        padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
         color: AppColors.surface,
         child: Row(children: [
           Text('${prov.rxCount} paket diterima',
-              style: const TextStyle(fontSize: 12.5, color: AppColors.textSecondary)),
-          const SizedBox(width: 12),
+              style: TextStyle(fontSize: 12.5, color: AppColors.textSecondary)),
+          SizedBox(width: 12),
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+            padding: EdgeInsets.symmetric(horizontal: 8, vertical: 3),
             decoration: BoxDecoration(color: AppColors.blueBg, borderRadius: BorderRadius.circular(99)),
-            child: const Row(mainAxisSize: MainAxisSize.min, children: [
+            child: Row(mainAxisSize: MainAxisSize.min, children: [
               Icon(Icons.lock_outline, size: 11, color: AppColors.blue),
               SizedBox(width: 4),
               Text('Read-Only',
@@ -57,7 +57,7 @@ class PacketsScreen extends StatelessWidget {
                   color: prov.packets.isEmpty ? AppColors.border : AppColors.danger,
                   width: 0.5,
                 ),
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                padding: EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                 minimumSize: Size.zero,
                 tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
@@ -77,8 +77,8 @@ class PacketsScreen extends StatelessWidget {
                       );
                       if (ok) prov.clearBuffer();
                     },
-              icon: const Icon(Icons.delete_outline, size: 14),
-              label: const Text('Hapus Buffer', style: TextStyle(fontSize: 11)),
+              icon: Icon(Icons.delete_outline, size: 14),
+              label: Text('Hapus Buffer', style: TextStyle(fontSize: 11)),
             ),
           ),
         ]),
@@ -86,7 +86,7 @@ class PacketsScreen extends StatelessWidget {
 
   Widget _packetList(BuildContext context, List<LoraRecord> records) {
     if (records.isEmpty) {
-      return const Center(
+      return Center(
         child: Column(mainAxisSize: MainAxisSize.min, children: [
           Icon(Icons.inbox_outlined, size: 40, color: AppColors.textMuted),
           SizedBox(height: 12),
@@ -99,9 +99,9 @@ class PacketsScreen extends StatelessWidget {
       );
     }
     return ListView.separated(
-      padding: const EdgeInsets.all(16),
+      padding: EdgeInsets.all(16),
       itemCount: records.length,
-      separatorBuilder: (_, __) => const SizedBox(height: 6),
+      separatorBuilder: (_, __) => SizedBox(height: 6),
       itemBuilder: (ctx, i) => _RecordTile(record: records[i]),
     );
   }
@@ -120,7 +120,7 @@ class _RecordTile extends StatelessWidget {
     };
 
     return Container(
-      padding: const EdgeInsets.all(12),
+      padding: EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: AppColors.surface,
         border: Border.all(color: AppColors.border, width: 0.5),
@@ -128,26 +128,26 @@ class _RecordTile extends StatelessWidget {
       ),
       child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
         Container(
-          padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+          padding: EdgeInsets.symmetric(horizontal: 7, vertical: 3),
           decoration: BoxDecoration(color: tagBg, borderRadius: BorderRadius.circular(99)),
           child: Text(tagLabel,
               style: TextStyle(fontSize: 9, fontWeight: FontWeight.w700, color: tagFg)),
         ),
-        const SizedBox(width: 10),
+        SizedBox(width: 10),
         Expanded(
           child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
             Text(record.parsedData ?? record.rawData,
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 12,
                   color: AppColors.textPrimary,
                   fontFamily: 'monospace',
                 )),
             if (record.rssi != null) ...[
-              const SizedBox(height: 4),
+              SizedBox(height: 4),
               Row(children: [
                 _chip(Icons.signal_cellular_alt,
                     'RSSI: ${record.rssi}dBm', AppColors.blueBg, AppColors.blue),
-                const SizedBox(width: 6),
+                SizedBox(width: 6),
                 if (record.snr != null)
                   _chip(Icons.waves,
                       'SNR: ${record.snr!.toStringAsFixed(1)}dB',
@@ -158,12 +158,12 @@ class _RecordTile extends StatelessWidget {
         ),
         Row(mainAxisSize: MainAxisSize.min, children: [
           Text(DateFormat('HH:mm:ss.SSS').format(record.receivedAt),
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 10,
                 color: AppColors.textMuted,
                 fontFamily: 'monospace',
               )),
-          const SizedBox(width: 8),
+          SizedBox(width: 8),
           InkWell(
             onTap: () {
               Clipboard.setData(ClipboardData(text: record.rawData));
@@ -175,7 +175,7 @@ class _RecordTile extends StatelessWidget {
               );
             },
             borderRadius: BorderRadius.circular(6),
-            child: const Padding(
+            child: Padding(
               padding: EdgeInsets.all(4),
               child: Icon(Icons.copy_outlined, size: 14, color: AppColors.textMuted),
             ),
@@ -186,11 +186,11 @@ class _RecordTile extends StatelessWidget {
   }
 
   Widget _chip(IconData icon, String label, Color bg, Color fg) => Container(
-        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+        padding: EdgeInsets.symmetric(horizontal: 6, vertical: 2),
         decoration: BoxDecoration(color: bg, borderRadius: BorderRadius.circular(99)),
         child: Row(mainAxisSize: MainAxisSize.min, children: [
           Icon(icon, size: 10, color: fg),
-          const SizedBox(width: 3),
+          SizedBox(width: 3),
           Text(label, style: TextStyle(fontSize: 10, color: fg, fontWeight: FontWeight.w500)),
         ]),
       );

@@ -24,17 +24,25 @@ class LoraApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final prov = context.watch<LoraProvider>();
     return MaterialApp(
       title: 'LoRa Monitor 433MHz',
       debugShowCheckedModeBanner: false,
       localizationsDelegates: GlobalMaterialLocalizations.delegates,
       supportedLocales: const [Locale('id', 'ID'), Locale('en', 'US')],
       theme: ThemeData(
-        brightness: Brightness.dark,
+        brightness: prov.isDarkMode ? Brightness.dark : Brightness.light,
         scaffoldBackgroundColor: AppColors.background,
-        colorScheme: const ColorScheme.dark(
-          surface: AppColors.surface,
+        colorScheme: ColorScheme(
+          brightness: prov.isDarkMode ? Brightness.dark : Brightness.light,
           primary: AppColors.blue,
+          onPrimary: Colors.white,
+          secondary: AppColors.blueBg,
+          onSecondary: Colors.white,
+          error: AppColors.danger,
+          onError: Colors.white,
+          surface: AppColors.surface,
+          onSurface: AppColors.textPrimary,
         ),
         fontFamily: 'sans-serif',
       ),

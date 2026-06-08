@@ -29,11 +29,11 @@ class StatusCard extends StatelessWidget {
                     color: connected ? AppColors.online : AppColors.textMuted,
                   ),
                 ),
-                const SizedBox(width: 10),
+                SizedBox(width: 10),
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text('Status Perangkat',
+                    Text('Status Perangkat',
                         style: TextStyle(fontSize: 11, color: AppColors.textSecondary)),
                     Text(
                       connected ? 'Terhubung' : 'Terputus',
@@ -57,21 +57,21 @@ class StatusCard extends StatelessWidget {
                   ),
                 ),
               ]),
-              const SizedBox(height: 14),
+              SizedBox(height: 14),
               _infoRow('Port', prov.selectedPort ?? '—'),
-              const SizedBox(height: 6),
+              SizedBox(height: 6),
               _infoRow('Baud Rate', '${prov.baudRate} bps'),
-              const SizedBox(height: 6),
+              SizedBox(height: 6),
               _infoRow('Frekuensi', '433 MHz'),
-              const SizedBox(height: 14),
+              SizedBox(height: 14),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                 decoration: BoxDecoration(
                   color: AppColors.amberBg,
                   borderRadius: BorderRadius.circular(6),
                   border: Border.all(color: AppColors.amber.withValues(alpha: 0.3), width: 0.5),
                 ),
-                child: const Row(mainAxisSize: MainAxisSize.min, children: [
+                child: Row(mainAxisSize: MainAxisSize.min, children: [
                   Icon(Icons.lock_outline, size: 11, color: AppColors.amber),
                   SizedBox(width: 5),
                   Text('Mode Terima Saja — Pengiriman Dinonaktifkan',
@@ -92,9 +92,9 @@ class StatusCard extends StatelessWidget {
   Widget _infoRow(String label, String value) => Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(label, style: const TextStyle(fontSize: 11.5, color: AppColors.textSecondary)),
+          Text(label, style: TextStyle(fontSize: 11.5, color: AppColors.textSecondary)),
           Text(value,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 11.5,
                 fontWeight: FontWeight.w600,
                 color: AppColors.textPrimary,
@@ -121,7 +121,7 @@ class SignalCard extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Row(children: [
+              Row(children: [
                 Icon(Icons.signal_cellular_alt, size: 16, color: AppColors.blue),
                 SizedBox(width: 8),
                 Text('Kualitas Sinyal',
@@ -131,13 +131,13 @@ class SignalCard extends StatelessWidget {
                       color: AppColors.textPrimary,
                     )),
               ]),
-              const SizedBox(height: 16),
+              SizedBox(height: 16),
               _signalRow('RSSI', rssi != null ? '$rssi dBm' : '—', rssiPct, AppColors.blue),
-              const SizedBox(height: 12),
+              SizedBox(height: 12),
               _signalRow('SNR',  snr  != null ? '${snr.toStringAsFixed(1)} dB' : '—', snrPct, AppColors.onlineSub),
               const Spacer(),
               if (rssi == null)
-                const Text('Menunggu data sinyal...',
+                Text('Menunggu data sinyal...',
                     style: TextStyle(fontSize: 11, color: AppColors.textMuted)),
             ],
           ),
@@ -151,7 +151,7 @@ class SignalCard extends StatelessWidget {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text(label, style: const TextStyle(fontSize: 11.5, color: AppColors.textSecondary)),
+            Text(label, style: TextStyle(fontSize: 11.5, color: AppColors.textSecondary)),
             Text(value,
                 style: TextStyle(
                   fontSize: 12,
@@ -161,7 +161,7 @@ class SignalCard extends StatelessWidget {
                 )),
           ],
         ),
-        const SizedBox(height: 6),
+        SizedBox(height: 6),
         ClipRRect(
           borderRadius: BorderRadius.circular(99),
           child: LinearProgressIndicator(
@@ -195,9 +195,9 @@ class ErrorCountCard extends StatelessWidget {
                   size: 18,
                   color: errCount > 0 ? AppColors.danger : AppColors.textMuted),
             ),
-            const SizedBox(width: 10),
+            SizedBox(width: 10),
             Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              const Text('Error',
+              Text('Error',
                   style: TextStyle(fontSize: 11, color: AppColors.textSecondary)),
               Text('$errCount',
                   style: TextStyle(
@@ -241,16 +241,16 @@ class MiniStatCard extends StatelessWidget {
           decoration: BoxDecoration(color: iconBg, borderRadius: BorderRadius.circular(10)),
           child: Icon(icon, size: 18, color: iconColor),
         ),
-        const SizedBox(width: 10),
+        SizedBox(width: 10),
         Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          Text(label, style: const TextStyle(fontSize: 11, color: AppColors.textSecondary)),
+          Text(label, style: TextStyle(fontSize: 11, color: AppColors.textSecondary)),
           Text(value,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.w800,
                 color: AppColors.textPrimary,
               )),
-          Text(sub, style: const TextStyle(fontSize: 10, color: AppColors.textMuted)),
+          Text(sub, style: TextStyle(fontSize: 10, color: AppColors.textMuted)),
         ]),
       ]),
     );
@@ -264,7 +264,7 @@ class _Card extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Container(
-        padding: const EdgeInsets.all(14),
+        padding: EdgeInsets.all(14),
         decoration: BoxDecoration(
           color: AppColors.surface,
           border: Border.all(color: AppColors.border, width: 0.5),

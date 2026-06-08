@@ -62,19 +62,19 @@ class _ApiScreenState extends State<ApiScreen> {
       Expanded(
         child: Consumer<LoraProvider>(
           builder: (ctx, prov, child) => SingleChildScrollView(
-            padding: const EdgeInsets.all(20),
+            padding: EdgeInsets.all(20),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 // ── Elogbook Sync (utama) ──────────────────────────────────
                 _elogbookSyncCard(ctx, prov),
-                const SizedBox(height: 16),
+                SizedBox(height: 16),
 
                 // ── Local API Server ───────────────────────────────────────
                 _controlCard(ctx, prov),
-                const SizedBox(height: 16),
+                SizedBox(height: 16),
                 _endpointCard(prov),
-                const SizedBox(height: 16),
+                SizedBox(height: 16),
                 _codeCard(prov),
               ],
             ),
@@ -97,7 +97,7 @@ class _ApiScreenState extends State<ApiScreen> {
 
         // ── Status bar ────────────────────────────────────────────────────
         _syncStatusBar(status, last),
-        const SizedBox(height: 16),
+        SizedBox(height: 16),
 
         // ── Config fields ─────────────────────────────────────────────────
         _labeledField('URL Elogbook',
@@ -105,20 +105,20 @@ class _ApiScreenState extends State<ApiScreen> {
           ctrl: _urlCtrl,
           onChanged: prov.setElogbookUrl,
         ),
-        const SizedBox(height: 10),
+        SizedBox(height: 10),
         _labeledField('Endpoint Path',
           hint: '/api/lora/ingest',
           ctrl: _epCtrl,
           onChanged: prov.setElogbookEndpoint,
         ),
-        const SizedBox(height: 10),
+        SizedBox(height: 10),
         _labeledField('API Key / Bearer Token',
           hint: 'sk-xxxxxxxxxxxx  (kosongkan jika tidak pakai)',
           ctrl: _keyCtrl,
           onChanged: prov.setElogbookApiKey,
           obscure: true,
         ),
-        const SizedBox(height: 16),
+        SizedBox(height: 16),
 
         // ── Tombol aksi ───────────────────────────────────────────────────
         Row(children: [
@@ -126,15 +126,15 @@ class _ApiScreenState extends State<ApiScreen> {
           OutlinedButton.icon(
             style: OutlinedButton.styleFrom(
               foregroundColor: AppColors.textSecondary,
-              side: const BorderSide(color: AppColors.border, width: 0.5),
+              side: BorderSide(color: AppColors.border, width: 0.5),
               minimumSize: const Size(0, 38),
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
             ),
             onPressed: () => _testConnection(ctx, prov),
-            icon: const Icon(Icons.wifi_tethering, size: 14),
-            label: const Text('Test Koneksi', style: TextStyle(fontSize: 12)),
+            icon: Icon(Icons.wifi_tethering, size: 14),
+            label: Text('Test Koneksi', style: TextStyle(fontSize: 12)),
           ),
-          const SizedBox(width: 10),
+          SizedBox(width: 10),
 
           // Sync manual
           ElevatedButton.icon(
@@ -147,19 +147,19 @@ class _ApiScreenState extends State<ApiScreen> {
             ),
             onPressed: status == SyncStatus.syncing ? null : () => _doSync(ctx, prov),
             icon: status == SyncStatus.syncing
-                ? const SizedBox(
+                ? SizedBox(
                     width: 12, height: 12,
                     child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
                   )
-                : const Icon(Icons.sync, size: 14),
+                : Icon(Icons.sync, size: 14),
             label: Text(status == SyncStatus.syncing ? 'Mengirim...' : 'Sync Sekarang',
-                style: const TextStyle(fontSize: 12)),
+                style: TextStyle(fontSize: 12)),
           ),
-          const SizedBox(width: 10),
+          SizedBox(width: 10),
 
           // Auto-sync toggle
-          const Text('Auto:', style: TextStyle(fontSize: 12, color: AppColors.textSecondary)),
-          const SizedBox(width: 4),
+          Text('Auto:', style: TextStyle(fontSize: 12, color: AppColors.textSecondary)),
+          SizedBox(width: 4),
           Switch(
             value: sync.autoEnabled,
             onChanged: (v) {
@@ -172,18 +172,18 @@ class _ApiScreenState extends State<ApiScreen> {
             activeThumbColor: AppColors.online,
           ),
           if (sync.autoEnabled) ...[
-            const SizedBox(width: 4),
+            SizedBox(width: 4),
             _intervalDropdown(prov, sync),
           ],
         ]),
 
         // ── Format payload ────────────────────────────────────────────────
-        const SizedBox(height: 14),
-        const Divider(color: AppColors.border, thickness: 0.5),
-        const SizedBox(height: 10),
-        const Text('Format Payload (POST JSON)',
+        SizedBox(height: 14),
+        Divider(color: AppColors.border, thickness: 0.5),
+        SizedBox(height: 10),
+        Text('Format Payload (POST JSON)',
             style: TextStyle(fontSize: 11.5, fontWeight: FontWeight.w600, color: AppColors.textSecondary)),
-        const SizedBox(height: 6),
+        SizedBox(height: 6),
         _codeBlock('', '''{
   "source":    "lora_edge",
   "timestamp": "2025-01-15T10:30:00.000Z",
@@ -213,7 +213,7 @@ class _ApiScreenState extends State<ApiScreen> {
     };
 
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+      padding: EdgeInsets.symmetric(horizontal: 10, vertical: 8),
       decoration: BoxDecoration(
         color: bg,
         borderRadius: BorderRadius.circular(8),
@@ -221,14 +221,14 @@ class _ApiScreenState extends State<ApiScreen> {
       ),
       child: Row(children: [
         Icon(icon, size: 14, color: fg),
-        const SizedBox(width: 8),
+        SizedBox(width: 8),
         Expanded(
           child: Text(label, style: TextStyle(fontSize: 12, color: fg, fontWeight: FontWeight.w500)),
         ),
         if (last != null && status != SyncStatus.syncing)
           Text(
             _formatTime(last.timestamp),
-            style: const TextStyle(fontSize: 10, color: AppColors.textMuted, fontFamily: 'monospace'),
+            style: TextStyle(fontSize: 10, color: AppColors.textMuted, fontFamily: 'monospace'),
           ),
       ]),
     );
@@ -242,30 +242,30 @@ class _ApiScreenState extends State<ApiScreen> {
   }) =>
       Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
         Text(label,
-            style: const TextStyle(fontSize: 11.5, fontWeight: FontWeight.w500, color: AppColors.textSecondary)),
-        const SizedBox(height: 5),
+            style: TextStyle(fontSize: 11.5, fontWeight: FontWeight.w500, color: AppColors.textSecondary)),
+        SizedBox(height: 5),
         TextField(
           controller: ctrl,
           obscureText: obscure,
-          style: const TextStyle(fontSize: 12.5, color: AppColors.textPrimary, fontFamily: 'monospace'),
+          style: TextStyle(fontSize: 12.5, color: AppColors.textPrimary, fontFamily: 'monospace'),
           decoration: InputDecoration(
             hintText: hint,
-            hintStyle: const TextStyle(fontSize: 12, color: AppColors.textMuted),
+            hintStyle: TextStyle(fontSize: 12, color: AppColors.textMuted),
             isDense: true,
-            contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 9),
+            contentPadding: EdgeInsets.symmetric(horizontal: 10, vertical: 9),
             filled: true,
             fillColor: AppColors.surfaceAlt,
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(7),
-              borderSide: const BorderSide(color: AppColors.border, width: 0.5),
+              borderSide: BorderSide(color: AppColors.border, width: 0.5),
             ),
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(7),
-              borderSide: const BorderSide(color: AppColors.border, width: 0.5),
+              borderSide: BorderSide(color: AppColors.border, width: 0.5),
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(7),
-              borderSide: const BorderSide(color: AppColors.blue),
+              borderSide: BorderSide(color: AppColors.blue),
             ),
           ),
           onChanged: onChanged,
@@ -277,7 +277,7 @@ class _ApiScreenState extends State<ApiScreen> {
         child: DropdownButton<int>(
           value: sync.autoIntervalMin,
           dropdownColor: AppColors.surface,
-          style: const TextStyle(fontSize: 12, color: AppColors.textPrimary),
+          style: TextStyle(fontSize: 12, color: AppColors.textPrimary),
           isDense: true,
           onChanged: (v) { if (v != null) prov.startAutoSync(v); },
           items: const [
@@ -297,7 +297,7 @@ class _ApiScreenState extends State<ApiScreen> {
       content: Row(children: [
         Icon(result.ok ? Icons.check_circle : Icons.error_outline,
             size: 16, color: result.ok ? AppColors.onlineSub : AppColors.danger),
-        const SizedBox(width: 8),
+        SizedBox(width: 8),
         Text(result.message,
             style: TextStyle(color: result.ok ? AppColors.onlineSub : AppColors.danger)),
       ]),
@@ -349,7 +349,7 @@ class _ApiScreenState extends State<ApiScreen> {
                   : null,
             ),
           ),
-          const SizedBox(width: 8),
+          SizedBox(width: 8),
           Text(running ? 'Server Berjalan' : 'Server Mati',
               style: TextStyle(
                 fontSize: 14, fontWeight: FontWeight.w700,
@@ -358,30 +358,30 @@ class _ApiScreenState extends State<ApiScreen> {
           const Spacer(),
           if (running)
             Container(
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+              padding: EdgeInsets.symmetric(horizontal: 10, vertical: 5),
               decoration: BoxDecoration(
                 color: AppColors.onlineBg,
                 borderRadius: BorderRadius.circular(8),
                 border: Border.all(color: AppColors.online, width: 0.5),
               ),
               child: Text('http://$host:$port',
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 12, color: AppColors.onlineSub,
                     fontFamily: 'monospace', fontWeight: FontWeight.w600,
                   )),
             ),
         ]),
-        const SizedBox(height: 16),
+        SizedBox(height: 16),
         Row(children: [
-          const Text('Port:', style: TextStyle(fontSize: 12, color: AppColors.textSecondary)),
-          const SizedBox(width: 8),
+          Text('Port:', style: TextStyle(fontSize: 12, color: AppColors.textSecondary)),
+          SizedBox(width: 8),
           SizedBox(
             width: 90,
             child: TextField(
               enabled: !running,
               controller: TextEditingController(text: '${prov.apiPort}'),
               keyboardType: TextInputType.number,
-              style: const TextStyle(fontSize: 12, color: AppColors.textPrimary, fontFamily: 'monospace'),
+              style: TextStyle(fontSize: 12, color: AppColors.textPrimary, fontFamily: 'monospace'),
               decoration: _inputDecor(),
               onChanged: (v) {
                 final p = int.tryParse(v);
@@ -389,7 +389,7 @@ class _ApiScreenState extends State<ApiScreen> {
               },
             ),
           ),
-          const SizedBox(width: 16),
+          SizedBox(width: 16),
           Expanded(
             child: ElevatedButton.icon(
               style: ElevatedButton.styleFrom(
@@ -415,24 +415,24 @@ class _ApiScreenState extends State<ApiScreen> {
           ),
         ]),
         if (running) ...[
-          const SizedBox(height: 12),
+          SizedBox(height: 12),
           Container(
-            padding: const EdgeInsets.all(10),
+            padding: EdgeInsets.all(10),
             decoration: BoxDecoration(
               color: AppColors.surfaceAlt,
               borderRadius: BorderRadius.circular(8),
               border: Border.all(color: AppColors.border, width: 0.5),
             ),
             child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              const Row(children: [
+              Row(children: [
                 Icon(Icons.info_outline, size: 12, color: AppColors.textMuted),
                 SizedBox(width: 6),
                 Text('Akses dari perangkat lain di jaringan yang sama:',
                     style: TextStyle(fontSize: 11, color: AppColors.textMuted)),
               ]),
-              const SizedBox(height: 6),
+              SizedBox(height: 6),
               SelectableText('http://$host:$port/api/packets/latest',
-                  style: const TextStyle(fontSize: 12, color: AppColors.blue, fontFamily: 'monospace')),
+                  style: TextStyle(fontSize: 12, color: AppColors.blue, fontFamily: 'monospace')),
             ]),
           ),
         ],
@@ -460,19 +460,19 @@ class _ApiScreenState extends State<ApiScreen> {
         children: endpoints.map((e) {
           final (method, path, desc) = e;
           return Padding(
-            padding: const EdgeInsets.only(bottom: 8),
+            padding: EdgeInsets.only(bottom: 8),
             child: Row(children: [
               Container(
                 width: 36,
-                padding: const EdgeInsets.symmetric(vertical: 2),
+                padding: EdgeInsets.symmetric(vertical: 2),
                 decoration: BoxDecoration(color: AppColors.blueBg, borderRadius: BorderRadius.circular(4)),
                 child: Center(child: Text(method,
-                    style: const TextStyle(fontSize: 9, fontWeight: FontWeight.w800, color: AppColors.blue))),
+                    style: TextStyle(fontSize: 9, fontWeight: FontWeight.w800, color: AppColors.blue))),
               ),
-              const SizedBox(width: 10),
+              SizedBox(width: 10),
               Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                Text(path, style: const TextStyle(fontSize: 11.5, color: AppColors.textPrimary, fontFamily: 'monospace')),
-                Text(desc, style: const TextStyle(fontSize: 10.5, color: AppColors.textSecondary)),
+                Text(path, style: TextStyle(fontSize: 11.5, color: AppColors.textPrimary, fontFamily: 'monospace')),
+                Text(desc, style: TextStyle(fontSize: 10.5, color: AppColors.textSecondary)),
               ])),
               InkWell(
                 onTap: () {
@@ -482,7 +482,7 @@ class _ApiScreenState extends State<ApiScreen> {
                   );
                 },
                 borderRadius: BorderRadius.circular(4),
-                child: const Padding(padding: EdgeInsets.all(4),
+                child: Padding(padding: EdgeInsets.all(4),
                     child: Icon(Icons.copy_outlined, size: 13, color: AppColors.textMuted)),
               ),
             ]),
@@ -521,7 +521,7 @@ class _ApiScreenState extends State<ApiScreen> {
       icon: Icons.code_outlined,
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
         _codeBlock('JavaScript / Fetch API', jsCode),
-        const SizedBox(height: 12),
+        SizedBox(height: 12),
         _codeBlock('Python / requests', pyCode),
       ]),
     );
@@ -533,7 +533,7 @@ class _ApiScreenState extends State<ApiScreen> {
           if (title.isNotEmpty) ...[
             Row(children: [
               Text(title,
-                  style: const TextStyle(fontSize: 11.5, fontWeight: FontWeight.w600, color: AppColors.textSecondary)),
+                  style: TextStyle(fontSize: 11.5, fontWeight: FontWeight.w600, color: AppColors.textSecondary)),
               const Spacer(),
               InkWell(
                 onTap: () {
@@ -543,7 +543,7 @@ class _ApiScreenState extends State<ApiScreen> {
                   );
                 },
                 borderRadius: BorderRadius.circular(4),
-                child: const Padding(padding: EdgeInsets.all(4),
+                child: Padding(padding: EdgeInsets.all(4),
                     child: Row(mainAxisSize: MainAxisSize.min, children: [
                       Icon(Icons.copy_outlined, size: 12, color: AppColors.textMuted),
                       SizedBox(width: 3),
@@ -551,18 +551,18 @@ class _ApiScreenState extends State<ApiScreen> {
                     ])),
               ),
             ]),
-            const SizedBox(height: 6),
+            SizedBox(height: 6),
           ],
           Container(
             width: double.infinity,
-            padding: const EdgeInsets.all(12),
+            padding: EdgeInsets.all(12),
             decoration: BoxDecoration(
               color: const Color(0xFF0D1117),
               borderRadius: BorderRadius.circular(8),
               border: Border.all(color: AppColors.border, width: 0.5),
             ),
             child: SelectableText(code,
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 11.5, color: Color(0xFFE2E8F0),
                   fontFamily: 'monospace', height: 1.5,
                 )),
@@ -572,16 +572,16 @@ class _ApiScreenState extends State<ApiScreen> {
 
   InputDecoration _inputDecor() => InputDecoration(
         isDense: true,
-        contentPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+        contentPadding: EdgeInsets.symmetric(horizontal: 8, vertical: 8),
         filled: true, fillColor: AppColors.surfaceAlt,
         border: OutlineInputBorder(borderRadius: BorderRadius.circular(6),
-            borderSide: const BorderSide(color: AppColors.border, width: 0.5)),
+            borderSide: BorderSide(color: AppColors.border, width: 0.5)),
         enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(6),
-            borderSide: const BorderSide(color: AppColors.border, width: 0.5)),
+            borderSide: BorderSide(color: AppColors.border, width: 0.5)),
         focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(6),
-            borderSide: const BorderSide(color: AppColors.blue)),
+            borderSide: BorderSide(color: AppColors.blue)),
         disabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(6),
-            borderSide: const BorderSide(color: AppColors.border, width: 0.5)),
+            borderSide: BorderSide(color: AppColors.border, width: 0.5)),
       );
 }
 
@@ -594,7 +594,7 @@ class _SectionCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Container(
         width: double.infinity,
-        padding: const EdgeInsets.all(16),
+        padding: EdgeInsets.all(16),
         decoration: BoxDecoration(
           color: AppColors.surface,
           border: Border.all(color: AppColors.border, width: 0.5),
@@ -603,11 +603,11 @@ class _SectionCard extends StatelessWidget {
         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
           Row(children: [
             Icon(icon, size: 16, color: AppColors.textSecondary),
-            const SizedBox(width: 8),
+            SizedBox(width: 8),
             Text(title,
-                style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
+                style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
           ]),
-          const SizedBox(height: 14),
+          SizedBox(height: 14),
           child,
         ]),
       );

@@ -14,7 +14,7 @@ class PortScreen extends StatelessWidget {
       Expanded(
         child: Consumer<LoraProvider>(
           builder: (_, prov, __) => SingleChildScrollView(
-            padding: const EdgeInsets.all(20),
+            padding: EdgeInsets.all(20),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -23,13 +23,13 @@ class PortScreen extends StatelessWidget {
                   icon: Icons.cable_outlined,
                   child: _portConfig(context, prov),
                 ),
-                const SizedBox(height: 16),
+                SizedBox(height: 16),
                 _sectionCard(
                   title: 'Status Koneksi',
                   icon: Icons.info_outline,
                   child: _connStatus(prov),
                 ),
-                const SizedBox(height: 16),
+                SizedBox(height: 16),
                 _sectionCard(
                   title: 'Panduan Koneksi ESP32',
                   icon: Icons.help_outline,
@@ -50,7 +50,7 @@ class PortScreen extends StatelessWidget {
   }) =>
       Container(
         width: double.infinity,
-        padding: const EdgeInsets.all(16),
+        padding: EdgeInsets.all(16),
         decoration: BoxDecoration(
           color: AppColors.surface,
           border: Border.all(color: AppColors.border, width: 0.5),
@@ -61,15 +61,15 @@ class PortScreen extends StatelessWidget {
           children: [
             Row(children: [
               Icon(icon, size: 16, color: AppColors.textSecondary),
-              const SizedBox(width: 8),
+              SizedBox(width: 8),
               Text(title,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 13,
                     fontWeight: FontWeight.w600,
                     color: AppColors.textPrimary,
                   )),
             ]),
-            const SizedBox(height: 14),
+            SizedBox(height: 14),
             child,
           ],
         ),
@@ -91,7 +91,7 @@ class PortScreen extends StatelessWidget {
                       onChanged: prov.isConnected ? null : (v) { if (v != null) prov.setPort(v); },
                     ),
             ),
-            const SizedBox(width: 8),
+            SizedBox(width: 8),
             _smallBtn(
               icon: Icons.refresh,
               onTap: prov.refreshPorts,
@@ -99,7 +99,7 @@ class PortScreen extends StatelessWidget {
             ),
           ]),
         ),
-        const SizedBox(height: 12),
+        SizedBox(height: 12),
         _labeledField(
           label: 'Baud Rate',
           child: _dropdownField<int>(
@@ -110,7 +110,7 @@ class PortScreen extends StatelessWidget {
             onChanged: prov.isConnected ? null : (v) => prov.setBaud(v!),
           ),
         ),
-        const SizedBox(height: 16),
+        SizedBox(height: 16),
         SizedBox(
           width: double.infinity,
           child: ElevatedButton.icon(
@@ -166,21 +166,21 @@ class PortScreen extends StatelessWidget {
         width: 10, height: 10,
         decoration: BoxDecoration(shape: BoxShape.circle, color: dot),
       ),
-      const SizedBox(width: 10),
+      SizedBox(width: 10),
       Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
         Text(label,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 13,
               fontWeight: FontWeight.w600,
               color: AppColors.textPrimary,
             )),
         Text(desc,
-            style: const TextStyle(fontSize: 11.5, color: AppColors.textSecondary)),
+            style: TextStyle(fontSize: 11.5, color: AppColors.textSecondary)),
       ]),
     ]);
   }
 
-  Widget _guide() => const Column(
+  Widget _guide() => Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           _GuideStep(no: '1', text: 'Hubungkan ESP32 ke komputer via kabel USB'),
@@ -215,13 +215,13 @@ class PortScreen extends StatelessWidget {
 
   Widget _emptyPortField() => Container(
         height: 38,
-        padding: const EdgeInsets.symmetric(horizontal: 10),
+        padding: EdgeInsets.symmetric(horizontal: 10),
         decoration: BoxDecoration(
           color: AppColors.surfaceAlt,
           border: Border.all(color: AppColors.border, width: 0.5),
           borderRadius: BorderRadius.circular(8),
         ),
-        child: const Row(children: [
+        child: Row(children: [
           Icon(Icons.usb_off, size: 14, color: AppColors.textMuted),
           SizedBox(width: 8),
           Text('Tidak ada port terdeteksi',
@@ -232,12 +232,12 @@ class PortScreen extends StatelessWidget {
   Widget _labeledField({required String label, required Widget child}) =>
       Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
         Text(label,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 11.5,
               fontWeight: FontWeight.w500,
               color: AppColors.textSecondary,
             )),
-        const SizedBox(height: 6),
+        SizedBox(height: 6),
         child,
       ]);
 
@@ -251,7 +251,7 @@ class PortScreen extends StatelessWidget {
   }) =>
       Container(
         height: 38,
-        padding: const EdgeInsets.symmetric(horizontal: 10),
+        padding: EdgeInsets.symmetric(horizontal: 10),
         decoration: BoxDecoration(
           color: enabled ? AppColors.surface : AppColors.surfaceAlt,
           border: Border.all(color: AppColors.border, width: 0.5),
@@ -262,9 +262,9 @@ class PortScreen extends StatelessWidget {
             value: value,
             hint: hint != null
                 ? Text(hint,
-                    style: const TextStyle(fontSize: 12.5, color: AppColors.textMuted))
+                    style: TextStyle(fontSize: 12.5, color: AppColors.textMuted))
                 : null,
-            style: const TextStyle(fontSize: 12.5, color: AppColors.textPrimary),
+            style: TextStyle(fontSize: 12.5, color: AppColors.textPrimary),
             dropdownColor: AppColors.surface,
             isExpanded: true,
             isDense: true,
@@ -309,23 +309,23 @@ class _GuideStep extends StatelessWidget {
         children: [
           Container(
             width: 20, height: 20,
-            decoration: const BoxDecoration(
+            decoration: BoxDecoration(
               color: AppColors.blueBg,
               shape: BoxShape.circle,
             ),
             child: Center(
               child: Text(no,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 10,
                     fontWeight: FontWeight.w700,
                     color: AppColors.blue,
                   )),
             ),
           ),
-          const SizedBox(width: 10),
+          SizedBox(width: 10),
           Expanded(
             child: Text(text,
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 12.5,
                   color: AppColors.textPrimary,
                   height: 1.4,

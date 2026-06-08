@@ -39,8 +39,8 @@ class AppSidebar extends StatelessWidget {
           // Logo
           Container(
             height: 60,
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            decoration: const BoxDecoration(
+            padding: EdgeInsets.symmetric(horizontal: 16),
+            decoration: BoxDecoration(
               border: Border(bottom: BorderSide(color: AppColors.border, width: 0.5)),
             ),
             child: Row(children: [
@@ -50,10 +50,10 @@ class AppSidebar extends StatelessWidget {
                   color: AppColors.blue,
                   borderRadius: BorderRadius.circular(8),
                 ),
-                child: const Icon(Icons.router, color: Colors.white, size: 18),
+                child: Icon(Icons.router, color: Colors.white, size: 18),
               ),
-              const SizedBox(width: 10),
-              const Column(
+              SizedBox(width: 10),
+              Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -76,19 +76,19 @@ class AppSidebar extends StatelessWidget {
           // Nav items
           Expanded(
             child: ListView.builder(
-              padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 8),
+              padding: EdgeInsets.symmetric(vertical: 8, horizontal: 8),
               itemCount: _navItems.length,
               itemBuilder: (_, i) {
                 final item    = _navItems[i];
                 final active  = i == selectedIndex;
                 return Padding(
-                  padding: const EdgeInsets.only(bottom: 2),
+                  padding: EdgeInsets.only(bottom: 2),
                   child: InkWell(
                     onTap: () => onSelect(i),
                     borderRadius: BorderRadius.circular(8),
                     child: AnimatedContainer(
                       duration: const Duration(milliseconds: 150),
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 9),
+                      padding: EdgeInsets.symmetric(horizontal: 10, vertical: 9),
                       decoration: BoxDecoration(
                         color: active ? AppColors.sidebarActive : Colors.transparent,
                         borderRadius: BorderRadius.circular(8),
@@ -97,7 +97,7 @@ class AppSidebar extends StatelessWidget {
                         Icon(item.icon,
                             size: 17,
                             color: active ? AppColors.blue : AppColors.textMuted),
-                        const SizedBox(width: 10),
+                        SizedBox(width: 10),
                         Text(item.label,
                             style: TextStyle(
                               fontSize: 12.5,
@@ -114,11 +114,11 @@ class AppSidebar extends StatelessWidget {
 
           // Footer
           Container(
-            padding: const EdgeInsets.all(12),
-            decoration: const BoxDecoration(
+            padding: EdgeInsets.all(12),
+            decoration: BoxDecoration(
               border: Border(top: BorderSide(color: AppColors.border, width: 0.5)),
             ),
-            child: const Row(children: [
+            child: Row(children: [
               Icon(Icons.lock_outline, size: 12, color: AppColors.textMuted),
               SizedBox(width: 6),
               Text('Read-Only Mode',

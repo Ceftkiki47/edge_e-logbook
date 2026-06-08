@@ -112,13 +112,14 @@ class LoraDatabase {
     DateTime? to,
     bool unsyncedOnly = false,
     bool ascending = false,
+    String? searchQuery,
   }) async {
     final db = await database;
 
     final where = <String>[];
     final args = <dynamic>[];
 
-    if (type != null) {
+    if (type != null && type.isNotEmpty && type != 'all') {
       where.add('packet_type = ?');
       args.add(type);
     }
@@ -132,6 +133,11 @@ class LoraDatabase {
     }
     if (unsyncedOnly) {
       where.add('synced = 0');
+    }
+    if (searchQuery != null && searchQuery.trim().isNotEmpty) {
+      where.add('(trail LIKE ? OR uuid LIKE ? OR raw_data LIKE ?)');
+      final sq = '%${searchQuery.trim()}%';
+      args.addAll([sq, sq, sq]);
     }
 
     final rows = await db.query(

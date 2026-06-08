@@ -15,7 +15,7 @@ class DashboardScreen extends StatelessWidget {
       const AppTopbar(title: 'Dashboard'),
       Expanded(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.all(16),
+          padding: EdgeInsets.all(16),
           child: Column(children: [
             // Row 1: Status + Sinyal
             const IntrinsicHeight(
@@ -28,13 +28,13 @@ class DashboardScreen extends StatelessWidget {
                 ],
               ),
             ),
-            const SizedBox(height: 14),
+            SizedBox(height: 14),
 
             // Row 2: Error + 4 mini stats
             Consumer<LoraProvider>(
               builder: (context, prov, child) => Row(children: [
-                const Expanded(child: ErrorCountCard()),
-                const SizedBox(width: 14),
+                Expanded(child: ErrorCountCard()),
+                SizedBox(width: 14),
                 Expanded(
                   child: MiniStatCard(
                     iconBg: AppColors.blueBg,
@@ -45,7 +45,7 @@ class DashboardScreen extends StatelessWidget {
                     sub: 'Paket diterima',
                   ),
                 ),
-                const SizedBox(width: 14),
+                SizedBox(width: 14),
                 Expanded(
                   child: MiniStatCard(
                     iconBg: AppColors.onlineBg,
@@ -56,8 +56,8 @@ class DashboardScreen extends StatelessWidget {
                     sub: 'Live',
                   ),
                 ),
-                const SizedBox(width: 14),
-                const Expanded(
+                SizedBox(width: 14),
+                Expanded(
                   child: MiniStatCard(
                     iconBg: AppColors.amberBg,
                     iconColor: AppColors.amber,
@@ -67,8 +67,8 @@ class DashboardScreen extends StatelessWidget {
                     sub: 'MHz',
                   ),
                 ),
-                const SizedBox(width: 14),
-                const Expanded(
+                SizedBox(width: 14),
+                Expanded(
                   child: MiniStatCard(
                     iconBg: AppColors.purpleBg,
                     iconColor: AppColors.purple,
@@ -80,21 +80,21 @@ class DashboardScreen extends StatelessWidget {
                 ),
               ]),
             ),
-            const SizedBox(height: 14),
+            SizedBox(height: 14),
 
             // Row 3: Log paket
             const PacketLogCard(),
-            const SizedBox(height: 14),
+            SizedBox(height: 14),
 
             // Row 4: Footer info
             Container(
-              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+              padding: EdgeInsets.symmetric(horizontal: 14, vertical: 10),
               decoration: BoxDecoration(
                 color: AppColors.surface,
                 border: Border.all(color: AppColors.border, width: 0.5),
                 borderRadius: BorderRadius.circular(12),
               ),
-              child: const Row(children: [
+              child: Row(children: [
                 Icon(Icons.info_outline, size: 14, color: AppColors.textMuted),
                 SizedBox(width: 8),
                 Expanded(

@@ -21,14 +21,14 @@ class PacketLogCard extends StatelessWidget {
       ),
       child: Column(children: [
         Container(
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-          decoration: const BoxDecoration(
+          padding: EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+          decoration: BoxDecoration(
             border: Border(bottom: BorderSide(color: AppColors.border, width: 0.5)),
           ),
           child: Row(children: [
-            const Icon(Icons.terminal, size: 14, color: AppColors.textSecondary),
-            const SizedBox(width: 8),
-            const Text('Log Paket Masuk',
+            Icon(Icons.terminal, size: 14, color: AppColors.textSecondary),
+            SizedBox(width: 8),
+            Text('Log Paket Masuk',
                 style: TextStyle(
                   fontSize: 12.5,
                   fontWeight: FontWeight.w600,
@@ -44,16 +44,16 @@ class PacketLogCard extends StatelessWidget {
                   );
                 },
                 style: OutlinedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 0),
+                  padding: EdgeInsets.symmetric(horizontal: 10, vertical: 0),
                   minimumSize: const Size(0, 24),
                   tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                  side: const BorderSide(color: AppColors.border, width: 0.5),
+                  side: BorderSide(color: AppColors.border, width: 0.5),
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
                 ),
-                child: const Text('Selengkapnya', style: TextStyle(fontSize: 10.5, color: AppColors.textSecondary)),
+                child: Text('Selengkapnya', style: TextStyle(fontSize: 10.5, color: AppColors.textSecondary)),
               ),
             ),
-            const SizedBox(width: 8),
+            SizedBox(width: 8),
             Consumer<LoraProvider>(
               builder: (ctx, prov, child) => Tooltip(
                 message: 'Hapus log tampilan',
@@ -75,7 +75,7 @@ class PacketLogCard extends StatelessWidget {
                         },
                   borderRadius: BorderRadius.circular(6),
                   child: Padding(
-                    padding: const EdgeInsets.all(4),
+                    padding: EdgeInsets.all(4),
                     child: Icon(
                       Icons.delete_outline,
                       size: 14,
@@ -93,14 +93,14 @@ class PacketLogCard extends StatelessWidget {
           child: Consumer<LoraProvider>(
             builder: (_, prov, __) {
               if (prov.packets.isEmpty) {
-                return const Center(
+                return Center(
                   child: Text('Menunggu data...',
                       style: TextStyle(fontSize: 12, color: AppColors.textMuted)),
                 );
               }
               final fmt = DateFormat('HH:mm:ss.SSS');
               return ListView.builder(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                padding: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                 itemCount: prov.packets.length,
                 itemBuilder: (_, i) => _LogRow(record: prov.packets[i], fmt: fmt),
               );
@@ -126,20 +126,20 @@ class _LogRow extends StatelessWidget {
     };
 
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 2),
+      padding: EdgeInsets.symmetric(vertical: 2),
       child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
         SizedBox(
           width: 90,
           child: Text(fmt.format(record.receivedAt),
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 10.5,
                 color: AppColors.textMuted,
                 fontFamily: 'monospace',
               )),
         ),
         Container(
-          padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
-          margin: const EdgeInsets.only(right: 8, top: 1),
+          padding: EdgeInsets.symmetric(horizontal: 5, vertical: 1),
+          margin: EdgeInsets.only(right: 8, top: 1),
           decoration: BoxDecoration(color: tagBg, borderRadius: BorderRadius.circular(99)),
           child: Text(tagLabel,
               style: TextStyle(fontSize: 9, fontWeight: FontWeight.w700, color: tagFg)),
@@ -147,7 +147,7 @@ class _LogRow extends StatelessWidget {
         Expanded(
           child: Text(
             record.parsedData ?? record.rawData,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 11.5,
               color: AppColors.textPrimary,
               fontFamily: 'monospace',
@@ -156,7 +156,7 @@ class _LogRow extends StatelessWidget {
         ),
         if (record.rssi != null)
           Text('${record.rssi}dBm',
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 10,
                 color: AppColors.blue,
                 fontFamily: 'monospace',

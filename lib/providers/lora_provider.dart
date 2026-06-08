@@ -6,6 +6,7 @@ import '../api/lora_api_server.dart';
 import '../models/lora_record.dart';
 import '../services/lora_serial_service.dart';
 import '../services/elogbook_sync_service.dart';
+import '../theme/app_colors.dart';
 
 export '../services/lora_serial_service.dart' show SerialState;
 export '../services/elogbook_sync_service.dart' show SyncStatus, SyncResult;
@@ -24,6 +25,7 @@ class LoraProvider extends ChangeNotifier {
   int baudRate = 115200;
   int apiPort = LoraApiServer.defaultPort;
   bool autoSave = true; // simpan ke DB otomatis
+  bool isDarkMode = true; // State tema
 
   SerialState get serialState => _serial.state;
   bool get isConnected => serialState == SerialState.connected;
@@ -108,8 +110,10 @@ class LoraProvider extends ChangeNotifier {
     DateTime? from,
     DateTime? to,
     bool ascending = false,
+    bool unsyncedOnly = false,
+    String? searchQuery,
   }) =>
-      _db.getAll(limit: limit, offset: offset, type: type, from: from, to: to, ascending: ascending);
+      _db.getAll(limit: limit, offset: offset, type: type, from: from, to: to, ascending: ascending, unsyncedOnly: unsyncedOnly, searchQuery: searchQuery);
 
   Future<void> clearDb() async {
     await _db.clearAll();
@@ -151,6 +155,12 @@ class LoraProvider extends ChangeNotifier {
 
   void setAutoSave(bool v) {
     autoSave = v;
+    notifyListeners();
+  }
+
+  void toggleTheme(bool dark) {
+    isDarkMode = dark;
+    AppColors.isDarkMode = dark;
     notifyListeners();
   }
 
