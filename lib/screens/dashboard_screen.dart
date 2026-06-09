@@ -99,8 +99,7 @@ class DashboardScreen extends StatelessWidget {
                 SizedBox(width: 8),
                 Expanded(
                   child: Text(
-                    'Aplikasi ini hanya menerima data LoRa dari ESP32 via USB Serial. '
-                    'Tidak ada fitur pengiriman data.',
+                    'Aplikasi ini menerima dan mengirimkan data LoRa dari ESP32 via USB Serial. ',
                     style: TextStyle(fontSize: 11.5, color: AppColors.textSecondary),
                   ),
                 ),

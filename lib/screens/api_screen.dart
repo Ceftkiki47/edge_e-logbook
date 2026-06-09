@@ -107,7 +107,7 @@ class _ApiScreenState extends State<ApiScreen> {
         ),
         SizedBox(height: 10),
         _labeledField('Endpoint Path',
-          hint: '/api/lora/ingest',
+          hint: '/api/edge/sync',
           ctrl: _epCtrl,
           onChanged: prov.setElogbookEndpoint,
         ),
@@ -508,7 +508,7 @@ class _ApiScreenState extends State<ApiScreen> {
     final pyCode = "# Python — ambil data & kirim ke elogbook\n"
         "import requests\n\n"
         "EDGE  = 'http://$host:$port/api'\n"
-        "ELOG  = 'https://elogbook.example.com/api/lora/ingest'\n"
+        "ELOG  = 'https://elogbook.example.com/api/edge/sync'\n"
         "TOKEN = 'Bearer sk-xxxx'\n\n"
         "def push_to_elogbook():\n"
         "    packets = requests.get(f'{EDGE}/packets?unsynced=1&limit=100').json()['data']\n"

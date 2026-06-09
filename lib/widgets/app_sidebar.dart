@@ -10,12 +10,12 @@ class _NavItem {
 const _navItems = [
   _NavItem(Icons.dashboard_outlined,      'Dashboard'),
   _NavItem(Icons.inbox_outlined,          'Paket Masuk'),
-  _NavItem(Icons.signal_cellular_alt,     'Kualitas Sinyal'),
+  // _NavItem(Icons.signal_cellular_alt,     'Kualitas Sinyal'),
   _NavItem(Icons.storage_outlined,        'Database Lokal'),
   _NavItem(Icons.dns_outlined,            'API Server'),
   _NavItem(Icons.cable_outlined,          'Koneksi Port'),
-  _NavItem(Icons.settings_outlined,       'Konfigurasi'),
-  _NavItem(Icons.notifications_outlined,  'Notifikasi'),
+  // _NavItem(Icons.settings_outlined,       'Konfigurasi'),
+  // _NavItem(Icons.notifications_outlined,  'Notifikasi'),
   _NavItem(Icons.tune_outlined,           'Pengaturan'),
 ];
 
@@ -41,7 +41,7 @@ class AppSidebar extends StatelessWidget {
             height: 60,
             padding: EdgeInsets.symmetric(horizontal: 16),
             decoration: BoxDecoration(
-              border: Border(bottom: BorderSide(color: AppColors.border, width: 0.5)),
+              border: Border(bottom: BorderSide(color: AppColors.sidebarBorder, width: 0.5)),
             ),
             child: Row(children: [
               Container(
@@ -61,12 +61,12 @@ class AppSidebar extends StatelessWidget {
                       style: TextStyle(
                         fontSize: 13,
                         fontWeight: FontWeight.w700,
-                        color: AppColors.textPrimary,
+                        color: AppColors.sidebarTextPrimary,
                       )),
                   Text('433 MHz Receiver',
                       style: TextStyle(
                         fontSize: 10,
-                        color: AppColors.textMuted,
+                        color: AppColors.sidebarTextMuted,
                       )),
                 ],
               ),
@@ -96,13 +96,13 @@ class AppSidebar extends StatelessWidget {
                       child: Row(children: [
                         Icon(item.icon,
                             size: 17,
-                            color: active ? AppColors.blue : AppColors.textMuted),
+                            color: active ? AppColors.blue : AppColors.sidebarTextMuted),
                         SizedBox(width: 10),
                         Text(item.label,
                             style: TextStyle(
                               fontSize: 12.5,
                               fontWeight: active ? FontWeight.w600 : FontWeight.normal,
-                              color: active ? AppColors.textPrimary : AppColors.textSecondary,
+                              color: active ? AppColors.sidebarTextPrimary : AppColors.sidebarTextSecondary,
                             )),
                       ]),
                     ),
@@ -116,13 +116,13 @@ class AppSidebar extends StatelessWidget {
           Container(
             padding: EdgeInsets.all(12),
             decoration: BoxDecoration(
-              border: Border(top: BorderSide(color: AppColors.border, width: 0.5)),
+              border: Border(top: BorderSide(color: AppColors.sidebarBorder, width: 0.5)),
             ),
             child: Row(children: [
-              Icon(Icons.lock_outline, size: 12, color: AppColors.textMuted),
+              Icon(Icons.lock_outline, size: 12, color: AppColors.sidebarTextMuted),
               SizedBox(width: 6),
               Text('Read-Only Mode',
-                  style: TextStyle(fontSize: 10.5, color: AppColors.textMuted)),
+                  style: TextStyle(fontSize: 10.5, color: AppColors.sidebarTextMuted)),
             ]),
           ),
         ],

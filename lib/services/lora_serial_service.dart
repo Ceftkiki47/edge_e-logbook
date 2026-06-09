@@ -104,6 +104,8 @@ class LoraSerialService {
         suhuKelembaban: (payload['suhu_kelembaban'] as num?)?.toDouble(),
         berat:          (payload['berat']          as num?)?.toDouble(),
         interval:       payload['interval']        as int?,
+        jenisIkan:      payload['jenis_ikan']      as String?,
+        idIkan:         payload['id_ikan']         as int?,
       );
     } catch (_) {
       return _system(line);

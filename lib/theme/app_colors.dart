@@ -42,6 +42,10 @@ class AppColors {
   static Color get tagErrBg  => isDarkMode ? const Color(0xFF450A0A) : const Color(0xFFFEE2E2);
   static Color get tagErrText => isDarkMode ? const Color(0xFFF87171) : const Color(0xFFDC2626);
 
-  static Color get sidebarBg     => isDarkMode ? const Color(0xFF13151F) : const Color(0xFF1E293B);
-  static Color get sidebarActive => isDarkMode ? const Color(0xFF1E3A5F) : const Color(0xFF334155);
+  static Color get sidebarBg            => const Color(0xFF13151F);
+  static Color get sidebarActive        => const Color(0xFF1E3A5F);
+  static Color get sidebarTextPrimary   => const Color(0xFFE2E8F0);
+  static Color get sidebarTextSecondary => const Color(0xFF94A3B8);
+  static Color get sidebarTextMuted     => const Color(0xFF4A5568);
+  static Color get sidebarBorder        => const Color(0xFF2A2D3E);
 }

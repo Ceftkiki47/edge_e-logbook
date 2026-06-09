@@ -7,7 +7,7 @@ import '../models/lora_record.dart';
 
 class LoraDatabase {
   static const _dbName = 'lora_receiver.db';
-  static const _dbVersion = 2;
+  static const _dbVersion = 3;
   static const _table = 'lora_packets';
 
   static LoraDatabase? _instance;
@@ -63,7 +63,9 @@ class LoraDatabase {
         suhu_air         REAL,
         suhu_kelembaban  REAL,
         berat            REAL,
-        interval         INTEGER
+        interval         INTEGER,
+        jenis_ikan       TEXT,
+        id_ikan          INTEGER
       )
     ''');
     await db.execute('CREATE INDEX idx_received_at ON $_table (received_at DESC)');
@@ -87,6 +89,16 @@ class LoraDatabase {
         await db.execute(col);
       }
       await db.execute('CREATE INDEX IF NOT EXISTS idx_trail ON $_table (trail)');
+    }
+    
+    // Migrasi v2 → v3: tambah kolom jenis_ikan dan id_ikan
+    if (oldVer < 3) {
+      for (final col in [
+        'ALTER TABLE $_table ADD COLUMN jenis_ikan      TEXT',
+        'ALTER TABLE $_table ADD COLUMN id_ikan         INTEGER',
+      ]) {
+        await db.execute(col);
+      }
     }
   }
 
@@ -173,6 +185,12 @@ class LoraDatabase {
       'UPDATE $_table SET synced = 1 WHERE uuid IN ($placeholders)',
       uuids,
     );
+  }
+
+  /// Hapus satu data berdasarkan ID
+  Future<int> deleteById(int id) async {
+    final db = await database;
+    return db.delete(_table, where: 'id = ?', whereArgs: [id]);
   }
 
   /// Hapus data lama (lebih dari N hari)

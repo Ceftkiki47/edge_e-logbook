@@ -52,12 +52,20 @@ class ElogbookSyncService {
 
   // ── Konfigurasi ───────────────────────────────────────────────────────────
   String baseUrl   = '';   // contoh: https://elogbook.example.com
-  String endpoint  = '/api/lora/ingest';
+  String endpoint  = '/api/edge/sync';
   String apiKey    = '';   // Bearer token / API key
 
   bool get isConfigured => baseUrl.isNotEmpty;
 
-  String get fullUrl => '${baseUrl.stripTrailing('/')}$endpoint';
+  String get _cleanBaseUrl {
+    var url = baseUrl.stripTrailing('/');
+    if (url.endsWith('/api')) {
+      url = url.substring(0, url.length - 4);
+    }
+    return url;
+  }
+
+  String get fullUrl => '$_cleanBaseUrl$endpoint';
 
   // SYNC FEATURE: Inisialisasi listener untuk memantau perubahan status koneksi internet
   void initConnectivityListener() {
@@ -220,7 +228,7 @@ class ElogbookSyncService {
       return (ok: false, statusCode: null, message: 'URL belum dikonfigurasi');
     }
     try {
-      final healthUrl = '${baseUrl.stripTrailing('/')}/api/health';
+      final healthUrl = '$_cleanBaseUrl/api/health';
       final headers = <String, String>{
         if (apiKey.isNotEmpty) 'Authorization': 'Bearer $apiKey',
       };

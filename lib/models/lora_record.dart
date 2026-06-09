@@ -19,6 +19,8 @@ class LoraRecord {
   final double? suhuKelembaban;
   final double? berat;
   final int?    interval;
+  final String? jenisIkan;
+  final int?    idIkan;
 
   const LoraRecord({
     this.id,
@@ -37,6 +39,8 @@ class LoraRecord {
     this.suhuKelembaban,
     this.berat,
     this.interval,
+    this.jenisIkan,
+    this.idIkan,
   });
 
   // ── SQLite ────────────────────────────────────────────────────────────────
@@ -57,6 +61,8 @@ class LoraRecord {
     'suhu_kelembaban':  suhuKelembaban,
     'berat':            berat,
     'interval':         interval,
+    'jenis_ikan':       jenisIkan,
+    'id_ikan':          idIkan,
   };
 
   factory LoraRecord.fromMap(Map<String, dynamic> m) => LoraRecord(
@@ -76,6 +82,8 @@ class LoraRecord {
     suhuKelembaban: (m['suhu_kelembaban'] as num?)?.toDouble(),
     berat:          (m['berat']         as num?)?.toDouble(),
     interval:       m['interval']       as int?,
+    jenisIkan:      m['jenis_ikan']     as String?,
+    idIkan:         m['id_ikan']        as int?,
   );
 
   // ── REST API ──────────────────────────────────────────────────────────────
@@ -96,6 +104,8 @@ class LoraRecord {
     'suhu_kelembaban':  suhuKelembaban,
     'berat':            berat,
     'interval':         interval,
+    'jenis_ikan':       jenisIkan,
+    'id_ikan':          idIkan,
   };
 
   static dynamic _tryDecode(String s) {
@@ -119,6 +129,8 @@ class LoraRecord {
     suhuKelembaban: suhuKelembaban,
     berat:          berat,
     interval:       interval,
+    jenisIkan:      jenisIkan,
+    idIkan:         idIkan,
   );
 }
 

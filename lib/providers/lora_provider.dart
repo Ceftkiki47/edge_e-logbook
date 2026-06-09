@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter/foundation.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../database/lora_database.dart';
 import '../api/lora_api_server.dart';
@@ -53,6 +54,9 @@ class LoraProvider extends ChangeNotifier {
 
     // SYNC FEATURE: Inisialisasi listener koneksi internet untuk auto-sync
     sync.initConnectivityListener();
+
+    await _loadPreferences();
+    sync.startAutoSync(1); // Auto sync otomatis dengan interval 1 menit
 
     refreshPorts();
     _startAutoConnectTimer();
@@ -130,6 +134,16 @@ class LoraProvider extends ChangeNotifier {
     await _refreshStats();
     notifyListeners();
     return n;
+  }
+
+  Future<bool> deleteRecord(int id) async {
+    final count = await _db.deleteById(id);
+    if (count > 0) {
+      await _refreshStats();
+      notifyListeners();
+      return true;
+    }
+    return false;
   }
 
   Future<void> _refreshStats() async {
@@ -253,6 +267,14 @@ class LoraProvider extends ChangeNotifier {
   SyncStatus get syncStatus => sync.status;
   SyncResult? get lastSyncResult => sync.lastResult;
 
+  Future<void> _loadPreferences() async {
+    final prefs = await SharedPreferences.getInstance();
+    sync.baseUrl = prefs.getString('elogbook_url') ?? '';
+    sync.endpoint = prefs.getString('elogbook_endpoint') ?? '/api/edge/sync';
+    sync.apiKey = prefs.getString('elogbook_key') ?? '';
+    notifyListeners();
+  }
+
   Future<SyncResult> syncToElogbook() async {
     final result = await sync.syncNow();
     await _refreshStats();
@@ -260,19 +282,25 @@ class LoraProvider extends ChangeNotifier {
     return result;
   }
 
-  void setElogbookUrl(String url) {
+  Future<void> setElogbookUrl(String url) async {
     sync.baseUrl = url;
     notifyListeners();
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('elogbook_url', url);
   }
 
-  void setElogbookApiKey(String key) {
+  Future<void> setElogbookApiKey(String key) async {
     sync.apiKey = key;
     notifyListeners();
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('elogbook_key', key);
   }
 
-  void setElogbookEndpoint(String ep) {
+  Future<void> setElogbookEndpoint(String ep) async {
     sync.endpoint = ep;
     notifyListeners();
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('elogbook_endpoint', ep);
   }
 
   void startAutoSync(int minutes) {
