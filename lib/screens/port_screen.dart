@@ -76,6 +76,24 @@ class PortScreen extends StatelessWidget {
       );
 
   Widget _portConfig(BuildContext ctx, LoraProvider prov) => Column(children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text('Koneksi Otomatis',
+                style: TextStyle(
+                  fontSize: 12.5,
+                  fontWeight: FontWeight.w600,
+                  color: AppColors.textPrimary,
+                )),
+            Switch(
+              value: prov.isAutoConnect,
+              onChanged: (v) => prov.setAutoConnect(v),
+              activeColor: AppColors.blue,
+              materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+            ),
+          ],
+        ),
+        SizedBox(height: 12),
         _labeledField(
           label: 'Port Serial',
           child: Row(children: [
@@ -124,7 +142,10 @@ class PortScreen extends StatelessWidget {
             ),
             onPressed: prov.serialState == SerialState.connecting
                 ? null
-                : (prov.isConnected ? prov.disconnect : prov.connect),
+                : (prov.isConnected ? () {
+                    prov.setAutoConnect(false);
+                    prov.disconnect();
+                  } : prov.connect),
             icon: Icon(prov.isConnected ? Icons.link_off : Icons.link, size: 16),
             label: Text(
               prov.serialState == SerialState.connecting

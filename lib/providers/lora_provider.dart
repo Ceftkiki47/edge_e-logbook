@@ -26,6 +26,9 @@ class LoraProvider extends ChangeNotifier {
   int apiPort = LoraApiServer.defaultPort;
   bool autoSave = true; // simpan ke DB otomatis
   bool isDarkMode = true; // State tema
+  bool isAutoConnect = true; // Koneksi otomatis ke port serial
+
+  Timer? _autoConnectTimer;
 
   SerialState get serialState => _serial.state;
   bool get isConnected => serialState == SerialState.connected;
@@ -52,6 +55,7 @@ class LoraProvider extends ChangeNotifier {
     sync.initConnectivityListener();
 
     refreshPorts();
+    _startAutoConnectTimer();
     notifyListeners();
   }
 
@@ -158,6 +162,41 @@ class LoraProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  void setAutoConnect(bool v) {
+    isAutoConnect = v;
+    notifyListeners();
+    if (v) {
+      _checkAndAutoConnect();
+    }
+  }
+
+  void _startAutoConnectTimer() {
+    _autoConnectTimer?.cancel();
+    _autoConnectTimer = Timer.periodic(const Duration(seconds: 2), (_) {
+      _checkAndAutoConnect();
+    });
+  }
+
+  Future<void> _checkAndAutoConnect() async {
+    if (!isAutoConnect || isConnected || serialState == SerialState.connecting) return;
+    
+    final oldPorts = List<String>.from(availPorts);
+    availPorts = LoraSerialService.availablePorts();
+    
+    // Jangan notifyListeners jika port list sama agar tidak merefresh UI terus menerus
+    if (!listEquals(oldPorts, availPorts)) {
+      notifyListeners();
+    }
+
+    if (availPorts.isNotEmpty) {
+      // Prioritaskan selectedPort, jika tidak ada, ambil port pertama
+      if (selectedPort == null || !availPorts.contains(selectedPort)) {
+        selectedPort = availPorts.first;
+      }
+      await connect();
+    }
+  }
+
   void toggleTheme(bool dark) {
     isDarkMode = dark;
     AppColors.isDarkMode = dark;
@@ -248,6 +287,7 @@ class LoraProvider extends ChangeNotifier {
 
   @override
   void dispose() {
+    _autoConnectTimer?.cancel();
     _serial.dispose();
     _api.stop();
     sync.dispose();
