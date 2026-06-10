@@ -100,8 +100,8 @@ class AppSidebar extends StatelessWidget {
                         SizedBox(width: 10),
                         Text(item.label,
                             style: TextStyle(
-                              fontSize: 12.5,
-                              fontWeight: active ? FontWeight.w600 : FontWeight.normal,
+                              fontSize: 13.5,
+                              fontWeight: active ? FontWeight.bold : FontWeight.w600,
                               color: active ? AppColors.sidebarTextPrimary : AppColors.sidebarTextSecondary,
                             )),
                       ]),

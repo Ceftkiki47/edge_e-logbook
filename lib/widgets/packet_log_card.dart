@@ -30,8 +30,8 @@ class PacketLogCard extends StatelessWidget {
             SizedBox(width: 8),
             Text('Log Paket Masuk',
                 style: TextStyle(
-                  fontSize: 12.5,
-                  fontWeight: FontWeight.w600,
+                  fontSize: 14.0,
+                  fontWeight: FontWeight.bold,
                   color: AppColors.textPrimary,
                 )),
             const Spacer(),
@@ -132,7 +132,8 @@ class _LogRow extends StatelessWidget {
           width: 90,
           child: Text(fmt.format(record.receivedAt),
               style: TextStyle(
-                fontSize: 10.5,
+                fontSize: 11,
+                fontWeight: FontWeight.w500,
                 color: AppColors.textMuted,
                 fontFamily: 'monospace',
               )),
@@ -148,7 +149,8 @@ class _LogRow extends StatelessWidget {
           child: Text(
             record.parsedData ?? record.rawData,
             style: TextStyle(
-              fontSize: 11.5,
+              fontSize: 12.5,
+              fontWeight: FontWeight.w600,
               color: AppColors.textPrimary,
               fontFamily: 'monospace',
             ),

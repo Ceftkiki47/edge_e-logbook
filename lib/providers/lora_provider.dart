@@ -26,7 +26,7 @@ class LoraProvider extends ChangeNotifier {
   int baudRate = 115200;
   int apiPort = LoraApiServer.defaultPort;
   bool autoSave = true; // simpan ke DB otomatis
-  bool isDarkMode = true; // State tema
+  bool isDarkMode = false; // State tema
   bool isAutoConnect = true; // Koneksi otomatis ke port serial
 
   Timer? _autoConnectTimer;

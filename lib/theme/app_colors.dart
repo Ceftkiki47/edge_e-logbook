@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 class AppColors {
   AppColors._();
 
-  static bool isDarkMode = true;
+  static bool isDarkMode = false;
 
   static Color get background  => isDarkMode ? const Color(0xFF0F1117) : const Color(0xFFF1F5F9);
   static Color get surface     => isDarkMode ? const Color(0xFF1A1D27) : const Color(0xFFFFFFFF);

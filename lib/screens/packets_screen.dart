@@ -138,7 +138,8 @@ class _RecordTile extends StatelessWidget {
           child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
             Text(record.parsedData ?? record.rawData,
                 style: TextStyle(
-                  fontSize: 12,
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
                   color: AppColors.textPrimary,
                   fontFamily: 'monospace',
                 )),
@@ -159,7 +160,8 @@ class _RecordTile extends StatelessWidget {
         Row(mainAxisSize: MainAxisSize.min, children: [
           Text(DateFormat('HH:mm:ss.SSS').format(record.receivedAt),
               style: TextStyle(
-                fontSize: 10,
+                fontSize: 11,
+                fontWeight: FontWeight.w500,
                 color: AppColors.textMuted,
                 fontFamily: 'monospace',
               )),
