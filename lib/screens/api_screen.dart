@@ -233,7 +233,7 @@ class _ApiScreenState extends State<ApiScreen> {
         TextField(
           controller: ctrl,
           obscureText: obscure,
-          style: TextStyle(fontSize: 12.5, color: AppColors.textPrimary, fontFamily: 'monospace'),
+          style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppColors.textPrimary, fontFamily: 'monospace'),
           decoration: InputDecoration(
             hintText: hint,
             hintStyle: TextStyle(fontSize: 12, color: AppColors.textMuted),
@@ -456,7 +456,7 @@ class _ApiScreenState extends State<ApiScreen> {
               enabled: !running,
               controller: TextEditingController(text: '${prov.apiPort}'),
               keyboardType: TextInputType.number,
-              style: TextStyle(fontSize: 12, color: AppColors.textPrimary, fontFamily: 'monospace'),
+              style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: AppColors.textPrimary, fontFamily: 'monospace'),
               decoration: _inputDecor(),
               onChanged: (v) {
                 final p = int.tryParse(v);

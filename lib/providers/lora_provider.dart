@@ -124,14 +124,18 @@ class LoraProvider extends ChangeNotifier {
   }) =>
       _db.getAll(limit: limit, offset: offset, type: type, from: from, to: to, ascending: ascending, unsyncedOnly: unsyncedOnly, searchQuery: searchQuery, sourceFilter: sourceFilter);
 
-  Future<void> clearDb() async {
-    await _db.clearAll();
+  Future<void> clearDb({String? source}) async {
+    if (source != null && source != 'all') {
+      await _db.clearBySource(source);
+    } else {
+      await _db.clearAll();
+    }
     await _refreshStats();
     notifyListeners();
   }
 
-  Future<int> deleteOldData(int days) async {
-    final n = await _db.deleteOlderThan(days);
+  Future<int> deleteOldData(int days, {String? source}) async {
+    final n = await _db.deleteOlderThan(days, source: source);
     await _refreshStats();
     notifyListeners();
     return n;

@@ -121,18 +121,16 @@ class _DatabaseScreenState extends State<DatabaseScreen> {
         // Hapus data lama
         OutlinedButton.icon(
           style: OutlinedButton.styleFrom(
-            foregroundColor: (prov.stats?.totalPackets ?? 0) == 0
+            foregroundColor: (prov.stats?.totalPackets ?? 0) == 0 || _sourceFilter != 'local'
                 ? AppColors.textMuted
                 : AppColors.amber,
             side: BorderSide(
-              color: (prov.stats?.totalPackets ?? 0) == 0
+              color: (prov.stats?.totalPackets ?? 0) == 0 || _sourceFilter != 'local'
                   ? AppColors.border
                   : AppColors.amber,
-              width: 0.5,
+              width: 1.0,
             ),
-            padding: EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-            minimumSize: Size.zero,
-            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+            padding: EdgeInsets.symmetric(horizontal: 14, vertical: 10),
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(8),
             ),
@@ -140,24 +138,22 @@ class _DatabaseScreenState extends State<DatabaseScreen> {
           onPressed: (prov.stats?.totalPackets ?? 0) == 0
               ? null
               : () => _confirmDeleteOld(context, prov),
-          icon: Icon(Icons.history, size: 14),
-          label: Text('Hapus Data Lama', style: TextStyle(fontSize: 11)),
+          icon: Icon(Icons.history, size: 16),
+          label: Text('Hapus Data Lama', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600)),
         ),
         SizedBox(width: 8),
         OutlinedButton.icon(
           style: OutlinedButton.styleFrom(
-            foregroundColor: (prov.stats?.totalPackets ?? 0) == 0
+            foregroundColor: (prov.stats?.totalPackets ?? 0) == 0 || _sourceFilter != 'local'
                 ? AppColors.textMuted
                 : AppColors.danger,
             side: BorderSide(
-              color: (prov.stats?.totalPackets ?? 0) == 0
+              color: (prov.stats?.totalPackets ?? 0) == 0 || _sourceFilter != 'local'
                   ? AppColors.border
                   : AppColors.danger,
-              width: 0.5,
+              width: 1.0,
             ),
-            padding: EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-            minimumSize: Size.zero,
-            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+            padding: EdgeInsets.symmetric(horizontal: 14, vertical: 10),
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(8),
             ),
@@ -165,8 +161,11 @@ class _DatabaseScreenState extends State<DatabaseScreen> {
           onPressed: (prov.stats?.totalPackets ?? 0) == 0
               ? null
               : () => _confirmClearAll(context, prov),
-          icon: Icon(Icons.delete_forever, size: 14),
-          label: Text('Hapus Semua', style: TextStyle(fontSize: 11)),
+          icon: Icon(Icons.delete_forever, size: 16),
+          label: Text(
+            'Hapus Data Antena', 
+            style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600)
+          ),
         ),
         SizedBox(width: 8),
         IconButton(
@@ -313,6 +312,7 @@ class _DatabaseScreenState extends State<DatabaseScreen> {
   Widget _tabButton(String label, String value, IconData icon) {
     final isSelected = _sourceFilter == value;
     return ChoiceChip(
+      showCheckmark: false,
       avatar: Icon(
         icon,
         size: 14,
@@ -711,14 +711,23 @@ class _DatabaseScreenState extends State<DatabaseScreen> {
   );
 
   Future<void> _confirmDeleteOld(BuildContext ctx, LoraProvider prov) async {
+    if (_sourceFilter != 'local') {
+      ScaffoldMessenger.of(ctx).showSnackBar(
+        SnackBar(
+          content: Text('Penghapusan hanya dapat dilakukan pada tab Data Antena untuk melindungi data server.'),
+          duration: Duration(seconds: 3),
+        ),
+      );
+      return;
+    }
+
     int days = 30;
     final total = prov.stats?.totalPackets ?? 0;
 
     final ok = await showConfirmDialog(
       ctx,
       title: 'Hapus Data Lama',
-      message:
-          'Pilih rentang waktu. Data yang lebih lama dari batas yang dipilih akan dihapus permanen dari database.',
+      message: 'Pilih rentang waktu. Data antena yang lebih lama dari batas yang dipilih akan dihapus permanen dari database.',
       confirmLabel: 'Hapus',
       level: ConfirmLevel.warning,
       countLabel: '$total total data tersimpan di database',
@@ -728,6 +737,7 @@ class _DatabaseScreenState extends State<DatabaseScreen> {
           children: [7, 14, 30, 90]
               .map(
                 (d) => ChoiceChip(
+                  showCheckmark: false,
                   label: Text('$d hari'),
                   selected: days == d,
                   onSelected: (_) => setSt(() => days = d),
@@ -750,7 +760,7 @@ class _DatabaseScreenState extends State<DatabaseScreen> {
     );
 
     if (ok && ctx.mounted) {
-      final n = await prov.deleteOldData(days);
+      final n = await prov.deleteOldData(days, source: 'local');
       await _load(offset: 0);
       if (ctx.mounted) {
         ScaffoldMessenger.of(ctx).showSnackBar(
@@ -778,19 +788,28 @@ class _DatabaseScreenState extends State<DatabaseScreen> {
   }
 
   Future<void> _confirmClearAll(BuildContext ctx, LoraProvider prov) async {
+    if (_sourceFilter != 'local') {
+      ScaffoldMessenger.of(ctx).showSnackBar(
+        SnackBar(
+          content: Text('Penghapusan hanya dapat dilakukan pada tab Data Antena untuk melindungi data server.'),
+          duration: Duration(seconds: 3),
+        ),
+      );
+      return;
+    }
+
     final total = prov.stats?.totalPackets ?? 0;
     final ok = await showConfirmDialog(
       ctx,
-      title: 'Hapus Semua Data',
-      message:
-          'Seluruh data di database lokal akan dihapus secara permanen dan tidak dapat dikembalikan.',
-      confirmLabel: 'Hapus Semua',
+      title: 'Hapus Data Antena',
+      message: 'Seluruh data antena di database lokal akan dihapus secara permanen dan tidak dapat dikembalikan.',
+      confirmLabel: 'Hapus Data Antena',
       level: ConfirmLevel.danger,
       countLabel: '$total paket akan dihapus permanen',
     );
 
     if (ok) {
-      await prov.clearDb();
+      await prov.clearDb(source: 'local');
       await _load(offset: 0);
       if (ctx.mounted) {
         ScaffoldMessenger.of(ctx).showSnackBar(
@@ -801,7 +820,7 @@ class _DatabaseScreenState extends State<DatabaseScreen> {
                 Icon(Icons.delete_forever, size: 16, color: AppColors.danger),
                 SizedBox(width: 8),
                 Text(
-                  'Semua data berhasil dihapus',
+                  'Data antena berhasil dihapus',
                   style: TextStyle(color: AppColors.danger),
                 ),
               ],

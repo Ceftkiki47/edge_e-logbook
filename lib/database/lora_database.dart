@@ -227,13 +227,22 @@ class LoraDatabase {
   }
 
   /// Hapus data lama (lebih dari N hari)
-  Future<int> deleteOlderThan(int days) async {
+  Future<int> deleteOlderThan(int days, {String? source}) async {
     final db = await database;
     final cutoff = DateTime.now().subtract(Duration(days: days));
+    
+    final where = <String>['received_at < ?'];
+    final args = <dynamic>[cutoff.toIso8601String()];
+    
+    if (source != null && source != 'all') {
+      where.add('source = ?');
+      args.add(source);
+    }
+    
     return db.delete(
       _table,
-      where: 'received_at < ?',
-      whereArgs: [cutoff.toIso8601String()],
+      where: where.join(' AND '),
+      whereArgs: args,
     );
   }
 
@@ -241,6 +250,12 @@ class LoraDatabase {
   Future<void> clearAll() async {
     final db = await database;
     await db.delete(_table);
+  }
+
+  /// Hapus data berdasarkan source
+  Future<int> clearBySource(String source) async {
+    final db = await database;
+    return await db.delete(_table, where: 'source = ?', whereArgs: [source]);
   }
 
   // ── Statistik ─────────────────────────────────────────────────────────────
