@@ -282,6 +282,13 @@ class LoraProvider extends ChangeNotifier {
     return result;
   }
 
+  Future<SyncResult> forceSyncByDate(DateTime date) async {
+    final result = await sync.forceSyncByDate(date);
+    await _refreshStats();
+    notifyListeners();
+    return result;
+  }
+
   Future<void> setElogbookUrl(String url) async {
     sync.baseUrl = url;
     notifyListeners();

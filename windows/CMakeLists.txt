@@ -4,7 +4,7 @@ project(test_lora LANGUAGES CXX)
 
 # The name of the executable created for the application. Change this to change
 # the on-disk name of your application.
-set(BINARY_NAME "test_lora")
+set(BINARY_NAME "Edge Computing E-Logbook")
 
 # Explicitly opt in to modern CMake behaviors to avoid warnings with recent
 # versions of CMake.

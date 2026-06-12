@@ -139,6 +139,63 @@ class ElogbookSyncService {
     return _lastResult!;
   }
 
+  /// Memaksa push semua record pada tanggal tertentu, tanpa mempedulikan status synced.
+  Future<SyncResult> forceSyncByDate(DateTime date) async {
+    if (_status == SyncStatus.syncing) {
+      return SyncResult(pushed: 0, failed: 0, errorMessage: 'Sync sedang berjalan');
+    }
+    if (!isConfigured) {
+      return SyncResult(pushed: 0, failed: 0, errorMessage: 'URL elogbook belum dikonfigurasi');
+    }
+
+    _setStatus(SyncStatus.syncing);
+
+    int totalPushed = 0;
+    int totalFailed = 0;
+    String? lastError;
+
+    // Build the date boundaries
+    final startOfDay = DateTime(date.year, date.month, date.day, 0, 0, 0);
+    final endOfDay = DateTime(date.year, date.month, date.day, 23, 59, 59);
+
+    try {
+      int offset = 0;
+      while (true) {
+        // Fetch ALL rx packets within the day, unsyncedOnly: false!
+        final batch = await _db.getAll(
+          limit: _batchSize,
+          offset: offset,
+          type: 'rx',
+          from: startOfDay,
+          to: endOfDay,
+          unsyncedOnly: false,
+        );
+        if (batch.isEmpty) break;
+
+        final result = await _pushBatch(batch);
+        if (result.$1 > 0) {
+          // Tandai yang berhasil sebagai synced
+          final synced = batch.take(result.$1).map((r) => r.uuid).toList();
+          await _db.markSynced(synced);
+          totalPushed += result.$1;
+        }
+        totalFailed += result.$2;
+        if (result.$3 != null) lastError = result.$3;
+
+        if (result.$2 > 0) break; // stop jika ada batch yang gagal
+        offset += _batchSize;
+      }
+
+      _lastResult = SyncResult(pushed: totalPushed, failed: totalFailed, errorMessage: lastError);
+      _setStatus(totalFailed == 0 ? SyncStatus.success : SyncStatus.error);
+    } catch (e) {
+      _lastResult = SyncResult(pushed: totalPushed, failed: totalFailed, errorMessage: e.toString());
+      _setStatus(SyncStatus.error);
+    }
+
+    return _lastResult!;
+  }
+
   /// Push satu batch, return (pushed, failed, errorMsg)
   Future<(int, int, String?)> _pushBatch(List<LoraRecord> batch) async {
     for (int attempt = 1; attempt <= _maxRetries; attempt++) {
