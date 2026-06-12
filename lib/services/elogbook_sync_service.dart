@@ -129,6 +129,12 @@ class ElogbookSyncService {
         offset += _batchSize;
       }
 
+      // SYNC FEATURE: Pull historical LoRa data from backend after push
+      final pullResult = await pullLoraData();
+      if (!pullResult.isSuccess) {
+        lastError = (lastError != null) ? '$lastError | Pull error: ${pullResult.errorMessage}' : pullResult.errorMessage;
+      }
+
       _lastResult = SyncResult(pushed: totalPushed, failed: totalFailed, errorMessage: lastError);
       _setStatus(totalFailed == 0 ? SyncStatus.success : SyncStatus.error);
     } catch (e) {
@@ -245,6 +251,70 @@ class ElogbookSyncService {
       }
     }
     return (0, batch.length, 'Gagal setelah $_maxRetries percobaan');
+  }
+
+  // ── Pull Data dari Backend ────────────────────────────────────────────────
+  Future<SyncResult> pullLoraData() async {
+    try {
+      final headers = {
+        'Accept': 'application/json',
+        if (apiKey.isNotEmpty) 'Authorization': 'Bearer $apiKey',
+      };
+
+      final response = await http
+          .get(Uri.parse(fullUrl), headers: headers)
+          .timeout(const Duration(seconds: _timeoutSec));
+
+      if (response.statusCode == 200) {
+        final jsonResponse = jsonDecode(response.body);
+        if (jsonResponse['success'] == true && jsonResponse['data'] != null) {
+          final loraPackets = jsonResponse['data']['lora_packets'] as List<dynamic>? ?? [];
+          
+          List<LoraRecord> recordsToInsert = [];
+          for (final packet in loraPackets) {
+            // Parse parsed_data if it exists
+            Map<String, dynamic> parsedInfo = {};
+            if (packet['parsed_data'] != null && packet['parsed_data'].toString().isNotEmpty) {
+              try {
+                parsedInfo = jsonDecode(packet['parsed_data']);
+              } catch (_) {}
+            }
+
+            final record = LoraRecord(
+              uuid: packet['uuid'],
+              rawData: packet['raw_data'] ?? '',
+              parsedData: packet['parsed_data'],
+              packetType: packet['packet_type'] ?? 'rx',
+              rssi: packet['rssi'],
+              snr: packet['snr'] != null ? (packet['snr'] as num).toDouble() : null,
+              lat: packet['lat'] != null ? (packet['lat'] as num).toDouble() : parsedInfo['lat'],
+              lng: packet['lng'] != null ? (packet['lng'] as num).toDouble() : parsedInfo['lng'],
+              suhuAir: packet['suhu_air'] != null ? (packet['suhu_air'] as num).toDouble() : parsedInfo['suhu_air'],
+              suhuKelembaban: packet['suhu_kelembaban'] != null ? (packet['suhu_kelembaban'] as num).toDouble() : parsedInfo['suhu_kelembaban'],
+              berat: packet['berat'] != null ? (packet['berat'] as num).toDouble() : parsedInfo['berat'],
+              interval: packet['interval'] ?? parsedInfo['interval'],
+              jenisIkan: parsedInfo['jenis_ikan'],
+              idIkan: parsedInfo['id_ikan'],
+              trail: packet['trail'] ?? parsedInfo['trail'],
+              syncedToApi: true, // Data dari server otomatis diset true
+              receivedAt: packet['received_at'] != null ? DateTime.parse(packet['received_at']) : DateTime.now(),
+              source: 'server',
+            );
+            
+            recordsToInsert.add(record);
+          }
+          
+          int inserted = 0;
+          if (recordsToInsert.isNotEmpty) {
+            inserted = await _db.insertBatch(recordsToInsert);
+          }
+          return SyncResult(pushed: inserted, failed: 0);
+        }
+      }
+      return SyncResult(pushed: 0, failed: 1, errorMessage: 'HTTP ${response.statusCode}');
+    } catch (e) {
+      return SyncResult(pushed: 0, failed: 1, errorMessage: 'Gagal menarik data: $e');
+    }
   }
 
   // ── Forward raw JSON ke elogbook (dari Postman via /api/push/batch) ────────

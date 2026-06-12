@@ -21,6 +21,9 @@ class LoraRecord {
   final int?    interval;
   final String? jenisIkan;
   final int?    idIkan;
+  
+  // ── Penanda Sumber Data ───────────────────────────────────────────────────
+  final String  source; // 'local' atau 'server'
 
   const LoraRecord({
     this.id,
@@ -41,6 +44,7 @@ class LoraRecord {
     this.interval,
     this.jenisIkan,
     this.idIkan,
+    this.source          = 'local',
   });
 
   // ── SQLite ────────────────────────────────────────────────────────────────
@@ -63,6 +67,7 @@ class LoraRecord {
     'interval':         interval,
     'jenis_ikan':       jenisIkan,
     'id_ikan':          idIkan,
+    'source':           source,
   };
 
   factory LoraRecord.fromMap(Map<String, dynamic> m) => LoraRecord(
@@ -84,6 +89,7 @@ class LoraRecord {
     interval:       m['interval']       as int?,
     jenisIkan:      m['jenis_ikan']     as String?,
     idIkan:         m['id_ikan']        as int?,
+    source:         m['source']         as String? ?? 'local',
   );
 
   // ── REST API ──────────────────────────────────────────────────────────────
@@ -106,6 +112,7 @@ class LoraRecord {
     'interval':         interval,
     'jenis_ikan':       jenisIkan,
     'id_ikan':          idIkan,
+    'source':           source,
   };
 
   static dynamic _tryDecode(String s) {
@@ -131,6 +138,7 @@ class LoraRecord {
     interval:       interval,
     jenisIkan:      jenisIkan,
     idIkan:         idIkan,
+    source:         source,
   );
 }
 

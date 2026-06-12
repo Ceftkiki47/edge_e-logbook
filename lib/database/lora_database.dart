@@ -7,7 +7,7 @@ import '../models/lora_record.dart';
 
 class LoraDatabase {
   static const _dbName = 'lora_receiver.db';
-  static const _dbVersion = 3;
+  static const _dbVersion = 4;
   static const _table = 'lora_packets';
 
   static LoraDatabase? _instance;
@@ -65,7 +65,8 @@ class LoraDatabase {
         berat            REAL,
         interval         INTEGER,
         jenis_ikan       TEXT,
-        id_ikan          INTEGER
+        id_ikan          INTEGER,
+        source           TEXT    NOT NULL DEFAULT 'local'
       )
     ''');
     await db.execute('CREATE INDEX idx_received_at ON $_table (received_at DESC)');
@@ -100,6 +101,11 @@ class LoraDatabase {
         await db.execute(col);
       }
     }
+    
+    // Migrasi v3 → v4: tambah kolom source
+    if (oldVer < 4) {
+      await db.execute('ALTER TABLE $_table ADD COLUMN source TEXT NOT NULL DEFAULT "local"');
+    }
   }
 
   // ── CRUD ──────────────────────────────────────────────────────────────────
@@ -115,6 +121,28 @@ class LoraDatabase {
     return record.copyWith(id: id);
   }
 
+  /// Simpan banyak paket sekaligus (Batch Insert)
+  Future<int> insertBatch(List<LoraRecord> records) async {
+    if (records.isEmpty) return 0;
+    final db = await database;
+    int inserted = 0;
+    await db.transaction((txn) async {
+      final batch = txn.batch();
+      for (final record in records) {
+        batch.insert(
+          _table,
+          record.toMap(),
+          conflictAlgorithm: ConflictAlgorithm.ignore,
+        );
+      }
+      final results = await batch.commit(continueOnError: true);
+      for (final r in results) {
+        if (r != null) inserted++;
+      }
+    });
+    return inserted;
+  }
+
   /// Ambil semua paket (terbaru di atas), dengan filter opsional
   Future<List<LoraRecord>> getAll({
     int limit = 200,
@@ -125,6 +153,7 @@ class LoraDatabase {
     bool unsyncedOnly = false,
     bool ascending = false,
     String? searchQuery,
+    String? sourceFilter, // 'all', 'local', 'server'
   }) async {
     final db = await database;
 
@@ -150,6 +179,10 @@ class LoraDatabase {
       where.add('(trail LIKE ? OR uuid LIKE ? OR raw_data LIKE ?)');
       final sq = '%${searchQuery.trim()}%';
       args.addAll([sq, sq, sq]);
+    }
+    if (sourceFilter != null && sourceFilter != 'all') {
+      where.add('source = ?');
+      args.add(sourceFilter);
     }
 
     final rows = await db.query(

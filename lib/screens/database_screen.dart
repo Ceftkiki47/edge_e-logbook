@@ -24,6 +24,7 @@ class _DatabaseScreenState extends State<DatabaseScreen> {
 
   String _searchQuery = '';
   String _filterType = 'all';
+  String _sourceFilter = 'all';
   bool _unsyncedOnly = false;
   bool _showFilter = false;
 
@@ -40,15 +41,15 @@ class _DatabaseScreenState extends State<DatabaseScreen> {
     final total = context.watch<LoraProvider>().stats?.totalPackets ?? 0;
     if (total != _lastTotal && _lastTotal != -1) {
       _lastTotal = total;
-      _load(offset: _offset);
+      _load(offset: _offset, silent: true);
     } else {
       _lastTotal = total;
     }
   }
 
-  Future<void> _load({int offset = 0}) async {
+  Future<void> _load({int offset = 0, bool silent = false}) async {
     setState(() {
-      _loading = true;
+      if (!silent) _loading = true;
       _offset = offset;
     });
     final prov = context.read<LoraProvider>();
@@ -58,6 +59,7 @@ class _DatabaseScreenState extends State<DatabaseScreen> {
       searchQuery: _searchQuery,
       type: _filterType,
       unsyncedOnly: _unsyncedOnly,
+      sourceFilter: _sourceFilter,
     );
     _dbPath ??= prov.dbPath;
     setState(() {
@@ -77,6 +79,7 @@ class _DatabaseScreenState extends State<DatabaseScreen> {
               children: [
                 _toolbar(prov),
                 if (_showFilter) _filterPanel(),
+                _tabFilters(),
                 _statsRow(prov),
                 Expanded(child: _loading ? _loadingWidget() : _table()),
                 _pagination(prov),
@@ -293,6 +296,51 @@ class _DatabaseScreenState extends State<DatabaseScreen> {
     ),
   );
 
+  Widget _tabFilters() => Container(
+    padding: EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+    color: AppColors.surface,
+    child: Row(
+      children: [
+        _tabButton('Semua Data', 'all', Icons.all_inbox),
+        SizedBox(width: 8),
+        _tabButton('Data Antena', 'local', Icons.cell_tower),
+        SizedBox(width: 8),
+        _tabButton('Data Server', 'server', Icons.cloud_download_outlined),
+      ],
+    ),
+  );
+
+  Widget _tabButton(String label, String value, IconData icon) {
+    final isSelected = _sourceFilter == value;
+    return ChoiceChip(
+      avatar: Icon(
+        icon,
+        size: 14,
+        color: isSelected ? AppColors.blue : AppColors.textSecondary,
+      ),
+      label: Text(label),
+      selected: isSelected,
+      onSelected: (_) {
+        if (_sourceFilter != value) {
+          setState(() => _sourceFilter = value);
+          _load(offset: 0);
+        }
+      },
+      selectedColor: AppColors.blueBg,
+      backgroundColor: AppColors.surfaceAlt,
+      labelStyle: TextStyle(
+        fontSize: 12,
+        color: isSelected ? AppColors.blue : AppColors.textSecondary,
+        fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+      ),
+      side: BorderSide(
+        color: isSelected ? AppColors.blue : AppColors.border,
+        width: 0.5,
+      ),
+      padding: EdgeInsets.symmetric(horizontal: 4, vertical: 6),
+    );
+  }
+
   Widget _statsRow(LoraProvider prov) {
     final s = prov.stats;
     return Container(
@@ -397,7 +445,19 @@ class _DatabaseScreenState extends State<DatabaseScreen> {
                     child: Row(
                       children: [
                         Expanded(flex: 45, child: _Td('${r.id ?? '-'}')),
-                        Expanded(flex: 60, child: _TypeBadge(r.packetType)),
+                        Expanded(
+                          flex: 60,
+                          child: Row(
+                            children: [
+                              _TypeBadge(r.packetType),
+                              SizedBox(width: 4),
+                              if (r.source == 'server')
+                                Icon(Icons.cloud_download_outlined, size: 12, color: AppColors.blue)
+                              else
+                                Icon(Icons.cell_tower, size: 12, color: AppColors.onlineSub),
+                            ],
+                          ),
+                        ),
                         Expanded(
                           flex: 120,
                           child: _Td(r.trail ?? '—', mono: true),

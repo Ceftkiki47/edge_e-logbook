@@ -120,8 +120,9 @@ class LoraProvider extends ChangeNotifier {
     bool ascending = false,
     bool unsyncedOnly = false,
     String? searchQuery,
+    String? sourceFilter,
   }) =>
-      _db.getAll(limit: limit, offset: offset, type: type, from: from, to: to, ascending: ascending, unsyncedOnly: unsyncedOnly, searchQuery: searchQuery);
+      _db.getAll(limit: limit, offset: offset, type: type, from: from, to: to, ascending: ascending, unsyncedOnly: unsyncedOnly, searchQuery: searchQuery, sourceFilter: sourceFilter);
 
   Future<void> clearDb() async {
     await _db.clearAll();
