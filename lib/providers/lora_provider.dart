@@ -247,6 +247,24 @@ class LoraProvider extends ChangeNotifier {
     }
   }
   Future<void> clearSavedEcid() async {
+    final oldEcid = savedEcid;
+    if (oldEcid != null) {
+      final baseUrl = sync.baseUrl;
+      if (baseUrl.isNotEmpty) {
+        try {
+          final uri = Uri.parse('$baseUrl/api/edge/lock-devices');
+          await http.post(
+            uri,
+            headers: {'Content-Type': 'application/json'},
+            body: jsonEncode({'ecid': oldEcid, 'lora_nodes': []}),
+          ).timeout(const Duration(seconds: 5));
+          debugPrint('Berhasil melepas kuncian di server untuk ECID: $oldEcid');
+        } catch (e) {
+          debugPrint('Gagal melepas kuncian di server: $e');
+        }
+      }
+    }
+
     savedEcid = null;
     savedLoraNodes = [];
     final prefs = await SharedPreferences.getInstance();
