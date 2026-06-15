@@ -192,6 +192,10 @@ class LoraProvider extends ChangeNotifier {
 
   // ── Pairing API ───────────────────────────────────────────────────────────
   Future<Map<String, dynamic>> fetchAvailableDevices() async {
+    if (isAuthenticated) {
+      await _fetchLatestProfile();
+    }
+
     final baseUrl = sync.baseUrl;
     if (baseUrl.isEmpty) throw Exception('URL Elogbook belum diatur.');
 
@@ -394,6 +398,51 @@ class LoraProvider extends ChangeNotifier {
 
     isAuthenticated = prefs.getBool('is_authenticated') ?? false;
     notifyListeners();
+    
+    if (isAuthenticated) {
+      _fetchLatestProfile(); // run in background
+    }
+  }
+
+  Future<void> _fetchLatestProfile() async {
+    if (sync.apiKey.isEmpty || sync.baseUrl.isEmpty) return;
+    try {
+      final uri = Uri.parse('${sync.baseUrl}/api/edge/auth/me');
+      final response = await http.get(
+        uri,
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer ${sync.apiKey}'
+        },
+      ).timeout(const Duration(seconds: 10));
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        if (data['success'] == true) {
+          final assignedEcid = data['user']?['assigned_ec_id'];
+          final prefs = await SharedPreferences.getInstance();
+          
+          if (assignedEcid != null && assignedEcid.toString().isNotEmpty) {
+            final newEcid = assignedEcid.toString();
+            if (newEcid != savedEcid) {
+              savedEcid = newEcid;
+              await prefs.setString('elogbook_ecid', savedEcid!);
+              sync.edgeEcid = savedEcid;
+              notifyListeners();
+            }
+          } else {
+             if (savedEcid != null) {
+                savedEcid = null;
+                await prefs.remove('elogbook_ecid');
+                sync.edgeEcid = null;
+                notifyListeners();
+             }
+          }
+        }
+      }
+    } catch (e) {
+      debugPrint('Gagal mengambil profil terbaru: $e');
+    }
   }
 
   Future<SyncResult> syncToElogbook() async {
