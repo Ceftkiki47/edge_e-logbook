@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 import 'database/lora_database.dart';
 import 'providers/lora_provider.dart';
 import 'screens/main_shell.dart';
+import 'screens/login_screen.dart';
 import 'theme/app_colors.dart';
 
 void main() async {
@@ -26,7 +27,7 @@ class LoraApp extends StatelessWidget {
   Widget build(BuildContext context) {
     final prov = context.watch<LoraProvider>();
     return MaterialApp(
-      title: 'LoRa Monitor 433MHz',
+      title: 'Edge Computing E-Logbook',
       debugShowCheckedModeBanner: false,
       localizationsDelegates: GlobalMaterialLocalizations.delegates,
       supportedLocales: const [Locale('id', 'ID'), Locale('en', 'US')],
@@ -46,7 +47,7 @@ class LoraApp extends StatelessWidget {
         ),
         fontFamily: 'sans-serif',
       ),
-      home: const MainShell(),
+      home: prov.isAuthenticated ? const MainShell() : const LoginScreen(),
     );
   }
 }

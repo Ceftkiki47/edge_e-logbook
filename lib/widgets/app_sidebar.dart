@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import '../providers/lora_provider.dart';
 import '../theme/app_colors.dart';
 
 class _NavItem {
@@ -113,17 +115,27 @@ class AppSidebar extends StatelessWidget {
           ),
 
           // Footer
-          Container(
-            padding: EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              border: Border(top: BorderSide(color: AppColors.sidebarBorder, width: 0.5)),
+          InkWell(
+            onTap: () async {
+              final prov = context.read<LoraProvider>();
+              await prov.logout();
+            },
+            child: Container(
+              padding: EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                border: Border(top: BorderSide(color: AppColors.sidebarBorder, width: 0.5)),
+              ),
+              child: Row(children: [
+                Icon(Icons.logout, size: 18, color: AppColors.danger),
+                SizedBox(width: 10),
+                Text('Keluar',
+                    style: TextStyle(
+                      fontSize: 13.5, 
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.danger,
+                    )),
+              ]),
             ),
-            child: Row(children: [
-              Icon(Icons.lock_outline, size: 12, color: AppColors.sidebarTextMuted),
-              SizedBox(width: 6),
-              Text('Read-Only Mode',
-                  style: TextStyle(fontSize: 10.5, color: AppColors.sidebarTextMuted)),
-            ]),
           ),
         ],
       ),

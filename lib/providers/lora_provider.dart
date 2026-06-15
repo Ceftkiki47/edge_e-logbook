@@ -19,6 +19,7 @@ class LoraProvider extends ChangeNotifier {
   final sync    = ElogbookSyncService();
 
   // ── State ─────────────────────────────────────────────────────────────────
+  bool isAuthenticated = false;
   List<LoraRecord> packets = []; // buffer in-memory (UI)
   LoraStats? stats;
   List<String> availPorts = [];
@@ -277,6 +278,7 @@ class LoraProvider extends ChangeNotifier {
     sync.baseUrl = prefs.getString('elogbook_url') ?? '';
     sync.endpoint = prefs.getString('elogbook_endpoint') ?? '/api/edge/sync';
     sync.apiKey = prefs.getString('elogbook_key') ?? '';
+    isAuthenticated = prefs.getBool('is_authenticated') ?? false;
     notifyListeners();
   }
 
@@ -322,6 +324,26 @@ class LoraProvider extends ChangeNotifier {
 
   void stopAutoSync() {
     sync.stopAutoSync();
+    notifyListeners();
+  }
+
+  // ── Authentication ────────────────────────────────────────────────────────
+  Future<bool> login(String username, String password) async {
+    // Hardcoded credentials for local login
+    if (username == 'admin' && password == 'admin') {
+      isAuthenticated = true;
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setBool('is_authenticated', true);
+      notifyListeners();
+      return true;
+    }
+    return false;
+  }
+
+  Future<void> logout() async {
+    isAuthenticated = false;
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('is_authenticated', false);
     notifyListeners();
   }
 
