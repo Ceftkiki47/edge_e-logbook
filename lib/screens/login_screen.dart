@@ -15,17 +15,17 @@ class _LoginScreenState extends State<LoginScreen> {
   final _usernameController = TextEditingController();
   final _passwordController = TextEditingController();
   bool _obscurePassword = true;
-  bool _showError = false;
+  String? _errorMessage;
   bool _isLoading = false;
 
   Future<void> _handleLogin() async {
     setState(() {
       _isLoading = true;
-      _showError = false;
+      _errorMessage = null;
     });
 
     final prov = context.read<LoraProvider>();
-    final success = await prov.login(
+    final errorMsg = await prov.login(
       _usernameController.text,
       _passwordController.text,
     );
@@ -33,8 +33,8 @@ class _LoginScreenState extends State<LoginScreen> {
     if (mounted) {
       setState(() {
         _isLoading = false;
-        if (!success) {
-          _showError = true;
+        if (errorMsg != null) {
+          _errorMessage = errorMsg;
         }
       });
     }
@@ -199,7 +199,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                       const SizedBox(height: 24),
 
-                      if (_showError) ...[
+                      if (_errorMessage != null) ...[
                         Container(
                           padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
                           decoration: BoxDecoration(
@@ -211,11 +211,13 @@ class _LoginScreenState extends State<LoginScreen> {
                             children: [
                               Icon(Icons.circle, size: 6, color: Colors.red[700]),
                               const SizedBox(width: 8),
-                              Text(
-                                'username atau password salah',
-                                style: TextStyle(
-                                  color: Colors.red[700],
-                                  fontSize: 13,
+                              Expanded(
+                                child: Text(
+                                  _errorMessage!,
+                                  style: TextStyle(
+                                    color: Colors.red[700],
+                                    fontSize: 13,
+                                  ),
                                 ),
                               ),
                             ],

@@ -1,5 +1,7 @@
 import 'dart:async';
+import 'dart:convert';
 import 'package:flutter/foundation.dart';
+import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../database/lora_database.dart';
@@ -276,7 +278,7 @@ class LoraProvider extends ChangeNotifier {
   Future<void> _loadPreferences() async {
     final prefs = await SharedPreferences.getInstance();
     sync.baseUrl = prefs.getString('elogbook_url') ?? '';
-    sync.endpoint = prefs.getString('elogbook_endpoint') ?? '/api/edge/sync';
+    sync.endpoint = prefs.getString('elogbook_endpoint') ?? '/api/edge/sync/data';
     sync.apiKey = prefs.getString('elogbook_key') ?? '';
     isAuthenticated = prefs.getBool('is_authenticated') ?? false;
     notifyListeners();
@@ -328,16 +330,49 @@ class LoraProvider extends ChangeNotifier {
   }
 
   // ── Authentication ────────────────────────────────────────────────────────
-  Future<bool> login(String username, String password) async {
-    // Hardcoded credentials for local login
-    if (username == 'admin' && password == 'admin') {
-      isAuthenticated = true;
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.setBool('is_authenticated', true);
-      notifyListeners();
-      return true;
+  Future<String?> login(String username, String password) async {
+    try {
+      final url = Uri.parse('http://192.168.1.4:5000/api/edge/auth/login');
+      final response = await http.post(
+        url,
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({
+          'username': username,
+          'password': password,
+        }),
+      ).timeout(const Duration(seconds: 10));
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        if (data['success'] == true) {
+          isAuthenticated = true;
+          final token = data['data'] != null ? data['data']['token'] : null;
+          
+          final prefs = await SharedPreferences.getInstance();
+          await prefs.setBool('is_authenticated', true);
+          
+          // Simpan token ke sync service sebagai API key
+          if (token != null) {
+            sync.apiKey = token;
+            await prefs.setString('elogbook_key', token);
+          }
+          
+          notifyListeners();
+          return null; // Sukses, tidak ada error
+        } else {
+          return data['message'] ?? 'Username atau password salah';
+        }
+      } else if (response.statusCode == 401) {
+        final data = jsonDecode(response.body);
+        return data['message'] ?? 'Username atau password salah';
+      } else {
+        return 'Gagal terhubung ke server. (HTTP ${response.statusCode})';
+      }
+    } on TimeoutException {
+      return 'Koneksi lambat. Server tidak merespons.';
+    } catch (e) {
+      return 'Terjadi masalah jaringan: Cek koneksi Anda.';
     }
-    return false;
   }
 
   Future<void> logout() async {

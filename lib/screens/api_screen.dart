@@ -103,7 +103,7 @@ class _ApiScreenState extends State<ApiScreen> {
         ),
         SizedBox(height: 10),
         _labeledField('Endpoint Path',
-          hint: '/api/edge/sync',
+          hint: '/api/edge/sync/data',
           ctrl: _epCtrl,
           onChanged: prov.setElogbookEndpoint,
         ),

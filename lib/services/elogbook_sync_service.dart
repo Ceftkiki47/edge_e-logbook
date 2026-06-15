@@ -52,7 +52,7 @@ class ElogbookSyncService {
 
   // ── Konfigurasi ───────────────────────────────────────────────────────────
   String baseUrl   = '';   // contoh: https://elogbook.example.com
-  String endpoint  = '/api/edge/sync';
+  String endpoint  = '/api/edge/sync/data';
   String apiKey    = '';   // Bearer token / API key
 
   bool get isConfigured => baseUrl.isNotEmpty;
