@@ -1,9 +1,10 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
-
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import '../database/lora_database.dart';
 import '../api/lora_api_server.dart';
 import '../models/lora_record.dart';
@@ -16,9 +17,9 @@ export '../services/elogbook_sync_service.dart' show SyncStatus, SyncResult;
 
 class LoraProvider extends ChangeNotifier {
   final _serial = LoraSerialService();
-  final _db     = LoraDatabase.instance;
-  final _api    = LoraApiServer();
-  final sync    = ElogbookSyncService();
+  final _db = LoraDatabase.instance;
+  final _api = LoraApiServer();
+  final sync = ElogbookSyncService();
 
   // ── State ─────────────────────────────────────────────────────────────────
   bool isAuthenticated = false;
@@ -40,6 +41,7 @@ class LoraProvider extends ChangeNotifier {
   int get apiPortActive => _api.port;
 
   String? dbPath;
+  String? savedEcid;
 
   // ── Init ──────────────────────────────────────────────────────────────────
   LoraProvider() {
@@ -124,8 +126,17 @@ class LoraProvider extends ChangeNotifier {
     bool unsyncedOnly = false,
     String? searchQuery,
     String? sourceFilter,
-  }) =>
-      _db.getAll(limit: limit, offset: offset, type: type, from: from, to: to, ascending: ascending, unsyncedOnly: unsyncedOnly, searchQuery: searchQuery, sourceFilter: sourceFilter);
+  }) => _db.getAll(
+    limit: limit,
+    offset: offset,
+    type: type,
+    from: from,
+    to: to,
+    ascending: ascending,
+    unsyncedOnly: unsyncedOnly,
+    searchQuery: searchQuery,
+    sourceFilter: sourceFilter,
+  );
 
   Future<void> clearDb({String? source}) async {
     if (source != null && source != 'all') {
@@ -179,6 +190,63 @@ class LoraProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  // ── Pairing API ───────────────────────────────────────────────────────────
+  Future<Map<String, dynamic>> fetchAvailableDevices() async {
+    final baseUrl = sync.baseUrl;
+    if (baseUrl.isEmpty) throw Exception('URL Elogbook belum diatur.');
+    
+    final uri = Uri.parse('$baseUrl/api/edge/available-devices${savedEcid != null ? '?ecid=$savedEcid' : ''}');
+    debugPrint('Meminta daftar perangkat dari: $uri');
+    final response = await http.get(uri).timeout(const Duration(seconds: 15));
+    
+    if (response.statusCode == 200) {
+      final json = jsonDecode(response.body);
+      if (json['success'] == true) {
+        return json['data'];
+      } else {
+        throw Exception(json['message'] ?? 'Gagal mengambil data perangkat');
+      }
+    } else {
+      throw Exception('Server error: ${response.statusCode}');
+    }
+  }
+
+  Future<void> lockDevices(String ecid, List<String> loraNodes) async {
+    final baseUrl = sync.baseUrl;
+    if (baseUrl.isEmpty) throw Exception('URL Elogbook belum diatur.');
+    
+    final uri = Uri.parse('$baseUrl/api/edge/lock-devices');
+    debugPrint('Mencoba mengunci perangkat ke ECID: $ecid dengan ${loraNodes.length} node(s)');
+    final response = await http.post(
+      uri,
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode({
+        'ecid': ecid,
+        'lora_nodes': loraNodes,
+      }),
+    ).timeout(const Duration(seconds: 15));
+    
+    if (response.statusCode == 200) {
+      final json = jsonDecode(response.body);
+      if (json['success'] == true) {
+        savedEcid = ecid;
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setString('elogbook_ecid', ecid);
+        notifyListeners();
+      } else {
+        throw Exception(json['message'] ?? 'Gagal mengunci perangkat');
+      }
+    } else {
+      throw Exception('Server error: ${response.statusCode} - ${response.body}');
+    }
+  }
+  Future<void> clearSavedEcid() async {
+    savedEcid = null;
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove('elogbook_ecid');
+    notifyListeners();
+  }
+
   void setAutoSave(bool v) {
     autoSave = v;
     notifyListeners();
@@ -200,11 +268,12 @@ class LoraProvider extends ChangeNotifier {
   }
 
   Future<void> _checkAndAutoConnect() async {
-    if (!isAutoConnect || isConnected || serialState == SerialState.connecting) return;
-    
+    if (!isAutoConnect || isConnected || serialState == SerialState.connecting)
+      return;
+
     final oldPorts = List<String>.from(availPorts);
     availPorts = LoraSerialService.availablePorts();
-    
+
     // Jangan notifyListeners jika port list sama agar tidak merefresh UI terus menerus
     if (!listEquals(oldPorts, availPorts)) {
       notifyListeners();
@@ -277,9 +346,10 @@ class LoraProvider extends ChangeNotifier {
 
   Future<void> _loadPreferences() async {
     final prefs = await SharedPreferences.getInstance();
-    sync.baseUrl = prefs.getString('elogbook_url') ?? '';
+    sync.baseUrl = dotenv.env['API_URL'] ?? '';
     sync.endpoint = prefs.getString('elogbook_endpoint') ?? '/api/edge/sync/data';
     sync.apiKey = prefs.getString('elogbook_key') ?? '';
+    savedEcid = prefs.getString('elogbook_ecid');
     isAuthenticated = prefs.getBool('is_authenticated') ?? false;
     notifyListeners();
   }
@@ -301,15 +371,31 @@ class LoraProvider extends ChangeNotifier {
   Future<void> setElogbookUrl(String url) async {
     sync.baseUrl = url;
     notifyListeners();
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setString('elogbook_url', url);
-  }
-
-  Future<void> setElogbookApiKey(String key) async {
-    sync.apiKey = key;
-    notifyListeners();
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setString('elogbook_key', key);
+    try {
+      final file = File('.env');
+      if (await file.exists()) {
+        final lines = await file.readAsLines();
+        final newLines = <String>[];
+        bool found = false;
+        for (var line in lines) {
+          if (line.trim().startsWith('API_URL=')) {
+            newLines.add('API_URL=$url');
+            found = true;
+          } else {
+            newLines.add(line);
+          }
+        }
+        if (!found) {
+          newLines.add('API_URL=$url');
+        }
+        await file.writeAsString(newLines.join('\n') + '\n');
+      } else {
+        await file.writeAsString('API_URL=$url\n');
+      }
+      dotenv.env['API_URL'] = url;
+    } catch (e) {
+      debugPrint('Gagal menyimpan ke .env: $e');
+    }
   }
 
   Future<void> setElogbookEndpoint(String ep) async {
@@ -317,6 +403,13 @@ class LoraProvider extends ChangeNotifier {
     notifyListeners();
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString('elogbook_endpoint', ep);
+  }
+
+  Future<void> setElogbookApiKey(String key) async {
+    sync.apiKey = key;
+    notifyListeners();
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('elogbook_key', key);
   }
 
   void startAutoSync(int minutes) {
@@ -331,21 +424,9 @@ class LoraProvider extends ChangeNotifier {
 
   // ── Authentication ────────────────────────────────────────────────────────
   Future<String?> login(String username, String password) async {
-    // MODE LOKAL (SEMENTARA)
-    // Langsung tembus jika menggunakan admin & admin
-    if (username == 'admin' && password == 'admin') {
-      isAuthenticated = true;
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.setBool('is_authenticated', true);
-      notifyListeners();
-      return null; // Sukses
-    } else {
-      return 'Username atau password salah';
-    }
-
-    /* --- KODE INTEGRASI BACKEND (DISIMPAN UNTUK NANTI) ---
     try {
-      final url = Uri.parse('http://192.168.1.4:5000/api/edge/auth/login');
+      final url = Uri.parse('${sync.baseUrl}/api/edge/auth/login');
+      debugPrint('Mencoba login ke: $url');
       final response = await http.post(
         url,
         headers: {'Content-Type': 'application/json'},
@@ -353,40 +434,36 @@ class LoraProvider extends ChangeNotifier {
           'username': username,
           'password': password,
         }),
-      ).timeout(const Duration(seconds: 10));
+      ).timeout(const Duration(seconds: 15));
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
         if (data['success'] == true) {
+          final token = data['token'] ?? data['data']?['token'];
           isAuthenticated = true;
-          final token = data['data'] != null ? data['data']['token'] : null;
-          
           final prefs = await SharedPreferences.getInstance();
           await prefs.setBool('is_authenticated', true);
-          
-          // Simpan token ke sync service sebagai API key
           if (token != null) {
-            sync.apiKey = token;
-            await prefs.setString('elogbook_key', token);
+            await setElogbookApiKey(token);
           }
-          
           notifyListeners();
-          return null; // Sukses, tidak ada error
+          return null; // Sukses
         } else {
+          debugPrint('Login gagal: ${response.body}');
+          return data['message'] ?? 'Login gagal. Coba lagi.';
+        }
+      } else {
+        debugPrint('Login HTTP Error: ${response.statusCode} - ${response.body}');
+        if (response.statusCode == 401) {
+          final data = jsonDecode(response.body);
           return data['message'] ?? 'Username atau password salah';
         }
-      } else if (response.statusCode == 401) {
-        final data = jsonDecode(response.body);
-        return data['message'] ?? 'Username atau password salah';
-      } else {
-        return 'Gagal terhubung ke server. (HTTP ${response.statusCode})';
+        return 'Server error HTTP ${response.statusCode}';
       }
-    } on TimeoutException {
-      return 'Koneksi lambat. Server tidak merespons.';
     } catch (e) {
-      return 'Terjadi masalah jaringan: Cek koneksi Anda.';
+      debugPrint('Login Exception: $e');
+      return 'Gagal: $e';
     }
-    */
   }
 
   Future<void> logout() async {

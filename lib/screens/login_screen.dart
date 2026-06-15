@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import '../providers/lora_provider.dart';
 import '../theme/app_colors.dart';
 import 'main_shell.dart';
@@ -40,6 +41,7 @@ class _LoginScreenState extends State<LoginScreen> {
     }
   }
 
+
   @override
   void dispose() {
     _usernameController.dispose();
@@ -53,10 +55,12 @@ class _LoginScreenState extends State<LoginScreen> {
     final Color ipbBlue = const Color(0xFF285cc4);
 
     return Scaffold(
-      body: Row(
+      body: Stack(
         children: [
-          // KIRI: Panel Biru
-          Expanded(
+          Row(
+            children: [
+              // KIRI: Panel Biru
+              Expanded(
             flex: 4,
             child: Container(
               color: ipbBlue,
@@ -301,8 +305,10 @@ class _LoginScreenState extends State<LoginScreen> {
               ),
             ),
           ),
-        ],
-      ),
-    );
+        ], // Row children
+      ), // Row
+    ], // Stack children
+  ), // Stack
+);
   }
 }

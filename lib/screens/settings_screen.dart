@@ -12,6 +12,106 @@ class SettingsScreen extends StatefulWidget {
 }
 
 class _SettingsScreenState extends State<SettingsScreen> {
+  bool _isLoadingDevices = false;
+  List<dynamic> _edgeDevices = [];
+  List<dynamic> _loraNodes = [];
+  String? _selectedEcid;
+  bool _isEcidLocked = false;
+  final Set<String> _selectedLoraNodes = {};
+  String? _errorMessage;
+  bool _isSaving = false;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _loadDevices();
+    });
+  }
+
+  Future<void> _loadDevices({bool showLoadingUI = true}) async {
+    final prov = context.read<LoraProvider>();
+    if (showLoadingUI) {
+      setState(() {
+        _isLoadingDevices = true;
+        _errorMessage = null;
+      });
+    }
+
+    try {
+      final data = await prov.fetchAvailableDevices();
+      setState(() {
+        _edgeDevices = data['edge_computing'] ?? [];
+        _loraNodes = data['lora_nodes'] ?? [];
+        
+        // Cek apakah savedEcid masih ada di daftar edge yang ditarik dari API
+        final savedEcid = prov.savedEcid;
+        final edgeExists = _edgeDevices.any((e) => e['nomorSeri'] == savedEcid);
+        _selectedEcid = edgeExists ? savedEcid : null;
+        _isEcidLocked = savedEcid != null;
+        
+        _selectedLoraNodes.clear();
+        for (var node in _loraNodes) {
+          if (node['isLockedByMe'] == true) {
+            _selectedLoraNodes.add(node['nomorSeri']);
+          }
+        }
+      });
+    } catch (e) {
+      setState(() => _errorMessage = e.toString().replaceAll('Exception: ', ''));
+    } finally {
+      if (mounted && showLoadingUI) setState(() => _isLoadingDevices = false);
+    }
+  }
+
+  void _confirmResetEcid() {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Reset Identitas Edge?'),
+        content: const Text('Apakah Anda yakin ingin me-reset identitas Edge Computing ini?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Batal'),
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              Navigator.pop(ctx);
+              await context.read<LoraProvider>().clearSavedEcid();
+              setState(() {
+                _isEcidLocked = false;
+                _selectedEcid = null;
+                _selectedLoraNodes.clear();
+              });
+            },
+            style: ElevatedButton.styleFrom(backgroundColor: AppColors.danger, foregroundColor: Colors.white),
+            child: const Text('Ya, Reset'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _savePairing() async {
+    if (_selectedEcid == null) return;
+    final prov = context.read<LoraProvider>();
+    setState(() => _isSaving = true);
+    try {
+      await prov.lockDevices(_selectedEcid!, _selectedLoraNodes.toList());
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Berhasil mengunci perangkat!'), backgroundColor: Colors.green));
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Gagal: ${e.toString().replaceAll('Exception: ', '')}'), backgroundColor: Colors.red));
+      }
+    } finally {
+      await _loadDevices(showLoadingUI: false);
+      if (mounted) setState(() => _isSaving = false);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final prov = context.watch<LoraProvider>();
@@ -22,7 +122,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         const AppTopbar(title: 'Pengaturan Aplikasi'),
         Expanded(
           child: SingleChildScrollView(
-            padding: EdgeInsets.all(24),
+            padding: const EdgeInsets.all(24),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -36,7 +136,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     onChanged: (val) => prov.toggleTheme(val),
                   ),
                 ]),
-                SizedBox(height: 24),
+                const SizedBox(height: 24),
 
                 _buildSectionHeader(Icons.storage, 'Database & Penyimpanan Lokal'),
                 _buildCard([
@@ -48,6 +148,123 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     onChanged: (val) => prov.setAutoSave(val),
                   ),
                 ]),
+                const SizedBox(height: 24),
+
+                _buildSectionHeader(Icons.link, 'Pairing Perangkat (Edge & LoRa)'),
+                _buildCard([
+                  if (_isLoadingDevices)
+                    const Padding(
+                      padding: EdgeInsets.all(24.0),
+                      child: Center(child: CircularProgressIndicator()),
+                    )
+                  else if (_errorMessage != null)
+                    Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: Column(
+                        children: [
+                          Text('Gagal memuat: $_errorMessage', style: const TextStyle(color: Colors.red)),
+                          TextButton(onPressed: _loadDevices, child: const Text('Coba Lagi'))
+                        ],
+                      ),
+                    )
+                  else
+                    Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          Text('Pilih Edge Computing (Identitas Desktop Ini):', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: AppColors.textPrimary)),
+                          const SizedBox(height: 8),
+                          Row(
+                            children: [
+                              Expanded(
+                                child: DropdownButtonFormField<String>(
+                                  value: _selectedEcid,
+                                  decoration: InputDecoration(
+                                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide(color: AppColors.border)),
+                                    contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                                    fillColor: _isEcidLocked ? AppColors.surfaceAlt : null,
+                                    filled: _isEcidLocked,
+                                  ),
+                                  items: _edgeDevices.map<DropdownMenuItem<String>>((edge) {
+                                    return DropdownMenuItem<String>(
+                                      value: edge['nomorSeri'],
+                                      child: Text('${edge['nomorSeri']} - ${edge['namaPerangkat']}', style: const TextStyle(fontSize: 13)),
+                                    );
+                                  }).toList(),
+                                  onChanged: _isEcidLocked ? null : (val) {
+                                    setState(() => _selectedEcid = val);
+                                  },
+                                  hint: const Text('Pilih Edge Computing...', style: TextStyle(fontSize: 13)),
+                                ),
+                              ),
+                              if (_isEcidLocked) ...[
+                                const SizedBox(width: 8),
+                                ElevatedButton.icon(
+                                  onPressed: _confirmResetEcid,
+                                  icon: const Icon(Icons.refresh, size: 16),
+                                  label: const Text('Reset'),
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: AppColors.danger,
+                                    foregroundColor: Colors.white,
+                                  ),
+                                )
+                              ]
+                            ],
+                          ),
+                          const SizedBox(height: 16),
+                          Text('Pilih LoRa Node yang dikunci ke Edge ini:', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: AppColors.textPrimary)),
+                          const SizedBox(height: 8),
+                          if (_loraNodes.isEmpty)
+                            Text('Tidak ada LoRa Node yang tersedia.', style: TextStyle(fontSize: 13, color: AppColors.textSecondary))
+                          else
+                            Container(
+                              decoration: BoxDecoration(border: Border.all(color: AppColors.border), borderRadius: BorderRadius.circular(8)),
+                              constraints: const BoxConstraints(maxHeight: 220),
+                              child: ListView.separated(
+                                shrinkWrap: true,
+                                itemCount: _loraNodes.length > 10 ? 10 : _loraNodes.length,
+                                separatorBuilder: (context, index) => Divider(height: 1, color: AppColors.border),
+                                itemBuilder: (context, index) {
+                                  final node = _loraNodes[index];
+                                  final sn = node['nomorSeri'] as String;
+                                  return CheckboxListTile(
+                                    title: Text('$sn - ${node['namaPerangkat']}', style: const TextStyle(fontSize: 13)),
+                                    value: _selectedLoraNodes.contains(sn),
+                                    activeColor: AppColors.blue,
+                                    onChanged: (val) {
+                                      setState(() {
+                                        if (val == true) {
+                                          _selectedLoraNodes.add(sn);
+                                        } else {
+                                          _selectedLoraNodes.remove(sn);
+                                        }
+                                      });
+                                    },
+                                    controlAffinity: ListTileControlAffinity.leading,
+                                    contentPadding: const EdgeInsets.symmetric(horizontal: 8),
+                                  );
+                                },
+                              ),
+                            ),
+                          const SizedBox(height: 16),
+                          ElevatedButton.icon(
+                            onPressed: (_selectedEcid == null || _isSaving) ? null : _savePairing,
+                            icon: _isSaving 
+                                ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2)) 
+                                : const Icon(Icons.save, size: 18),
+                            label: Text(_isSaving ? 'Menyimpan...' : 'Simpan Penguncian'),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: AppColors.blue, 
+                              foregroundColor: Colors.white,
+                              padding: const EdgeInsets.symmetric(vertical: 12)
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                ]),
+                const SizedBox(height: 40),
               ],
             ),
           ),
@@ -58,11 +275,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   Widget _buildSectionHeader(IconData icon, String title) {
     return Padding(
-      padding: EdgeInsets.only(bottom: 12, left: 4),
+      padding: const EdgeInsets.only(bottom: 12, left: 4),
       child: Row(
         children: [
           Icon(icon, size: 18, color: AppColors.blue),
-          SizedBox(width: 8),
+          const SizedBox(width: 8),
           Text(title, style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: AppColors.textPrimary)),
         ],
       ),

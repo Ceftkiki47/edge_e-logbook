@@ -19,8 +19,8 @@ class _ApiScreenState extends State<ApiScreen> {
 
   // Controller untuk field elogbook — pakai late agar bisa init dari provider
   late final TextEditingController _urlCtrl;
-  late final TextEditingController _keyCtrl;
   late final TextEditingController _epCtrl;
+  late final TextEditingController _keyCtrl;
 
   @override
   void initState() {
@@ -28,15 +28,15 @@ class _ApiScreenState extends State<ApiScreen> {
     _getLocalIp();
     final sync = context.read<LoraProvider>().sync;
     _urlCtrl = TextEditingController(text: sync.baseUrl);
-    _keyCtrl = TextEditingController(text: sync.apiKey);
     _epCtrl  = TextEditingController(text: sync.endpoint);
+    _keyCtrl = TextEditingController(text: sync.apiKey);
   }
 
   @override
   void dispose() {
     _urlCtrl.dispose();
-    _keyCtrl.dispose();
     _epCtrl.dispose();
+    _keyCtrl.dispose();
     super.dispose();
   }
 
@@ -96,8 +96,9 @@ class _ApiScreenState extends State<ApiScreen> {
         SizedBox(height: 16),
 
         // ── Config fields ─────────────────────────────────────────────────
+
         _labeledField('URL Elogbook',
-          hint: 'https://elogbook.example.com',
+          hint: 'http://192.168.1.4:5000',
           ctrl: _urlCtrl,
           onChanged: prov.setElogbookUrl,
         ),
