@@ -331,6 +331,19 @@ class LoraProvider extends ChangeNotifier {
 
   // ── Authentication ────────────────────────────────────────────────────────
   Future<String?> login(String username, String password) async {
+    // MODE LOKAL (SEMENTARA)
+    // Langsung tembus jika menggunakan admin & admin
+    if (username == 'admin' && password == 'admin') {
+      isAuthenticated = true;
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setBool('is_authenticated', true);
+      notifyListeners();
+      return null; // Sukses
+    } else {
+      return 'Username atau password salah';
+    }
+
+    /* --- KODE INTEGRASI BACKEND (DISIMPAN UNTUK NANTI) ---
     try {
       final url = Uri.parse('http://192.168.1.4:5000/api/edge/auth/login');
       final response = await http.post(
@@ -373,6 +386,7 @@ class LoraProvider extends ChangeNotifier {
     } catch (e) {
       return 'Terjadi masalah jaringan: Cek koneksi Anda.';
     }
+    */
   }
 
   Future<void> logout() async {
