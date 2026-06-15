@@ -11,7 +11,6 @@ import '../models/lora_record.dart';
 import '../services/lora_serial_service.dart';
 import '../services/elogbook_sync_service.dart';
 import '../theme/app_colors.dart';
-
 export '../services/lora_serial_service.dart' show SerialState;
 export '../services/elogbook_sync_service.dart' show SyncStatus, SyncResult;
 
@@ -195,11 +194,13 @@ class LoraProvider extends ChangeNotifier {
   Future<Map<String, dynamic>> fetchAvailableDevices() async {
     final baseUrl = sync.baseUrl;
     if (baseUrl.isEmpty) throw Exception('URL Elogbook belum diatur.');
-    
-    final uri = Uri.parse('$baseUrl/api/edge/available-devices${savedEcid != null ? '?ecid=$savedEcid' : ''}');
+
+    final uri = Uri.parse(
+      '$baseUrl/api/edge/available-devices${savedEcid != null ? '?ecid=$savedEcid' : ''}',
+    );
     debugPrint('Meminta daftar perangkat dari: $uri');
     final response = await http.get(uri).timeout(const Duration(seconds: 15));
-    
+
     if (response.statusCode == 200) {
       final json = jsonDecode(response.body);
       if (json['success'] == true) {
@@ -215,18 +216,19 @@ class LoraProvider extends ChangeNotifier {
   Future<void> lockDevices(String ecid, List<String> loraNodes) async {
     final baseUrl = sync.baseUrl;
     if (baseUrl.isEmpty) throw Exception('URL Elogbook belum diatur.');
-    
+
     final uri = Uri.parse('$baseUrl/api/edge/lock-devices');
-    debugPrint('Mencoba mengunci perangkat ke ECID: $ecid dengan ${loraNodes.length} node(s)');
-    final response = await http.post(
-      uri,
-      headers: {'Content-Type': 'application/json'},
-      body: jsonEncode({
-        'ecid': ecid,
-        'lora_nodes': loraNodes,
-      }),
-    ).timeout(const Duration(seconds: 15));
-    
+    debugPrint(
+      'Mencoba mengunci perangkat ke ECID: $ecid dengan ${loraNodes.length} node(s)',
+    );
+    final response = await http
+        .post(
+          uri,
+          headers: {'Content-Type': 'application/json'},
+          body: jsonEncode({'ecid': ecid, 'lora_nodes': loraNodes}),
+        )
+        .timeout(const Duration(seconds: 15));
+
     if (response.statusCode == 200) {
       final json = jsonDecode(response.body);
       if (json['success'] == true) {
@@ -235,7 +237,7 @@ class LoraProvider extends ChangeNotifier {
         final prefs = await SharedPreferences.getInstance();
         await prefs.setString('elogbook_ecid', ecid);
         await prefs.setStringList('elogbook_lora_nodes', loraNodes);
-        
+
         sync.edgeEcid = savedEcid;
         sync.edgeLoraNodes = savedLoraNodes;
         notifyListeners();
@@ -243,9 +245,12 @@ class LoraProvider extends ChangeNotifier {
         throw Exception(json['message'] ?? 'Gagal mengunci perangkat');
       }
     } else {
-      throw Exception('Server error: ${response.statusCode} - ${response.body}');
+      throw Exception(
+        'Server error: ${response.statusCode} - ${response.body}',
+      );
     }
   }
+
   Future<void> clearSavedEcid() async {
     final oldEcid = savedEcid;
     if (oldEcid != null) {
@@ -253,11 +258,13 @@ class LoraProvider extends ChangeNotifier {
       if (baseUrl.isNotEmpty) {
         try {
           final uri = Uri.parse('$baseUrl/api/edge/lock-devices');
-          await http.post(
-            uri,
-            headers: {'Content-Type': 'application/json'},
-            body: jsonEncode({'ecid': oldEcid, 'lora_nodes': []}),
-          ).timeout(const Duration(seconds: 5));
+          await http
+              .post(
+                uri,
+                headers: {'Content-Type': 'application/json'},
+                body: jsonEncode({'ecid': oldEcid, 'lora_nodes': []}),
+              )
+              .timeout(const Duration(seconds: 5));
           debugPrint('Berhasil melepas kuncian di server untuk ECID: $oldEcid');
         } catch (e) {
           debugPrint('Gagal melepas kuncian di server: $e');
@@ -270,7 +277,7 @@ class LoraProvider extends ChangeNotifier {
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove('elogbook_ecid');
     await prefs.remove('elogbook_lora_nodes');
-    
+
     sync.edgeEcid = null;
     sync.edgeLoraNodes = [];
     notifyListeners();
@@ -376,14 +383,15 @@ class LoraProvider extends ChangeNotifier {
   Future<void> _loadPreferences() async {
     final prefs = await SharedPreferences.getInstance();
     sync.baseUrl = dotenv.env['API_URL'] ?? '';
-    sync.endpoint = prefs.getString('elogbook_endpoint') ?? '/api/edge/sync/data';
+    sync.endpoint =
+        prefs.getString('elogbook_endpoint') ?? '/api/edge/sync/data';
     sync.apiKey = prefs.getString('elogbook_key') ?? '';
     savedEcid = prefs.getString('elogbook_ecid');
     savedLoraNodes = prefs.getStringList('elogbook_lora_nodes') ?? [];
-    
+
     sync.edgeEcid = savedEcid;
     sync.edgeLoraNodes = savedLoraNodes;
-    
+
     isAuthenticated = prefs.getBool('is_authenticated') ?? false;
     notifyListeners();
   }
@@ -461,14 +469,17 @@ class LoraProvider extends ChangeNotifier {
     try {
       final url = Uri.parse('${sync.baseUrl}/api/edge/auth/login');
       debugPrint('Mencoba login ke: $url');
-      final response = await http.post(
-        url,
-        headers: {'Content-Type': 'application/json'},
-        body: jsonEncode({
-          'username': username,
-          'password': password,
-        }),
-      ).timeout(const Duration(seconds: 15));
+      final response = await http
+          .post(
+            url,
+            headers: {'Content-Type': 'application/json'},
+            body: jsonEncode({
+              'username': username,
+              'password': password,
+              'platform': 'desktop'
+            }),
+          )
+          .timeout(const Duration(seconds: 15));
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
@@ -480,6 +491,15 @@ class LoraProvider extends ChangeNotifier {
           if (token != null) {
             await setElogbookApiKey(token);
           }
+          
+          // Tangkap assigned_ec_id jika ada, lalu kunci secara otomatis
+          final assignedEcid = data['user']?['assigned_ec_id'];
+          if (assignedEcid != null && assignedEcid.toString().isNotEmpty) {
+            savedEcid = assignedEcid.toString();
+            await prefs.setString('elogbook_ecid', savedEcid!);
+            sync.edgeEcid = savedEcid;
+          }
+          
           notifyListeners();
           return null; // Sukses
         } else {
@@ -487,7 +507,9 @@ class LoraProvider extends ChangeNotifier {
           return data['message'] ?? 'Login gagal. Coba lagi.';
         }
       } else {
-        debugPrint('Login HTTP Error: ${response.statusCode} - ${response.body}');
+        debugPrint(
+          'Login HTTP Error: ${response.statusCode} - ${response.body}',
+        );
         if (response.statusCode == 401) {
           final data = jsonDecode(response.body);
           return data['message'] ?? 'Username atau password salah';

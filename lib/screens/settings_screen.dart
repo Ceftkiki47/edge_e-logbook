@@ -65,35 +65,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
     }
   }
 
-  void _confirmResetEcid() {
-    showDialog(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('Reset Identitas Edge?'),
-        content: const Text('Apakah Anda yakin ingin me-reset identitas Edge Computing ini?'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: const Text('Batal'),
-          ),
-          ElevatedButton(
-            onPressed: () async {
-              Navigator.pop(ctx);
-              await context.read<LoraProvider>().clearSavedEcid();
-              setState(() {
-                _isEcidLocked = false;
-                _selectedEcid = null;
-                _selectedLoraNodes.clear();
-              });
-            },
-            style: ElevatedButton.styleFrom(backgroundColor: AppColors.danger, foregroundColor: Colors.white),
-            child: const Text('Ya, Reset'),
-          ),
-        ],
-      ),
-    );
-  }
-
   Future<void> _savePairing() async {
     if (_selectedEcid == null) return;
     final prov = context.read<LoraProvider>();
@@ -216,8 +187,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                                   decoration: InputDecoration(
                                     border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide(color: AppColors.border)),
                                     contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-                                    fillColor: _isEcidLocked ? AppColors.surfaceAlt : null,
-                                    filled: _isEcidLocked,
+                                    fillColor: AppColors.surfaceAlt,
+                                    filled: true,
                                   ),
                                   items: _edgeDevices.map<DropdownMenuItem<String>>((edge) {
                                     return DropdownMenuItem<String>(
@@ -225,24 +196,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
                                       child: Text('${edge['nomorSeri']} - ${edge['namaPerangkat']}', style: const TextStyle(fontSize: 13)),
                                     );
                                   }).toList(),
-                                  onChanged: _isEcidLocked ? null : (val) {
-                                    setState(() => _selectedEcid = val);
-                                  },
-                                  hint: const Text('Pilih Edge Computing...', style: TextStyle(fontSize: 13)),
+                                  onChanged: null, // Terkunci otomatis dari Web Admin
+                                  hint: const Text('Terkunci dari Admin Web...', style: TextStyle(fontSize: 13)),
                                 ),
                               ),
-                              if (_isEcidLocked) ...[
-                                const SizedBox(width: 8),
-                                ElevatedButton.icon(
-                                  onPressed: _confirmResetEcid,
-                                  icon: const Icon(Icons.refresh, size: 16),
-                                  label: const Text('Reset'),
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor: AppColors.danger,
-                                    foregroundColor: Colors.white,
-                                  ),
-                                )
-                              ]
                             ],
                           ),
                           const SizedBox(height: 16),
