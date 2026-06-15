@@ -1,11 +1,10 @@
 import 'package:flutter/material.dart';
-import '../screens/dashboard_screen.dart';
-import '../screens/packets_screen.dart';
-import '../screens/database_screen.dart';
-import '../screens/api_screen.dart';
-import '../screens/port_screen.dart';
-import '../screens/placeholder_screen.dart';
-import '../screens/settings_screen.dart';
+import 'dashboard_screen.dart';
+import 'packets_screen.dart';
+import 'database_screen.dart';
+import 'api_screen.dart';
+import 'port_screen.dart';
+import 'settings_screen.dart';
 import '../widgets/app_sidebar.dart';
 
 class MainShell extends StatefulWidget {
@@ -50,7 +49,12 @@ class _MainShellState extends State<MainShell> {
           selectedIndex: _selectedIndex,
           onSelect: (i) => setState(() => _selectedIndex = i),
         ),
-        Expanded(child: _screens[_selectedIndex]),
+        Expanded(
+          child: IndexedStack(
+            index: _selectedIndex,
+            children: _screens,
+          ),
+        ),
       ]),
     );
   }

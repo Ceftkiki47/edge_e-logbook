@@ -42,6 +42,7 @@ class LoraProvider extends ChangeNotifier {
 
   String? dbPath;
   String? savedEcid;
+  List<String> savedLoraNodes = [];
 
   // ── Init ──────────────────────────────────────────────────────────────────
   LoraProvider() {
@@ -230,8 +231,13 @@ class LoraProvider extends ChangeNotifier {
       final json = jsonDecode(response.body);
       if (json['success'] == true) {
         savedEcid = ecid;
+        savedLoraNodes = loraNodes;
         final prefs = await SharedPreferences.getInstance();
         await prefs.setString('elogbook_ecid', ecid);
+        await prefs.setStringList('elogbook_lora_nodes', loraNodes);
+        
+        sync.edgeEcid = savedEcid;
+        sync.edgeLoraNodes = savedLoraNodes;
         notifyListeners();
       } else {
         throw Exception(json['message'] ?? 'Gagal mengunci perangkat');
@@ -242,8 +248,13 @@ class LoraProvider extends ChangeNotifier {
   }
   Future<void> clearSavedEcid() async {
     savedEcid = null;
+    savedLoraNodes = [];
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove('elogbook_ecid');
+    await prefs.remove('elogbook_lora_nodes');
+    
+    sync.edgeEcid = null;
+    sync.edgeLoraNodes = [];
     notifyListeners();
   }
 
@@ -350,6 +361,11 @@ class LoraProvider extends ChangeNotifier {
     sync.endpoint = prefs.getString('elogbook_endpoint') ?? '/api/edge/sync/data';
     sync.apiKey = prefs.getString('elogbook_key') ?? '';
     savedEcid = prefs.getString('elogbook_ecid');
+    savedLoraNodes = prefs.getStringList('elogbook_lora_nodes') ?? [];
+    
+    sync.edgeEcid = savedEcid;
+    sync.edgeLoraNodes = savedLoraNodes;
+    
     isAuthenticated = prefs.getBool('is_authenticated') ?? false;
     notifyListeners();
   }

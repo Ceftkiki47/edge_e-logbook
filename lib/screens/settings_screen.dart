@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:flutter/foundation.dart';
 import '../providers/lora_provider.dart';
 import '../theme/app_colors.dart';
 import '../widgets/app_topbar.dart';
@@ -112,9 +113,41 @@ class _SettingsScreenState extends State<SettingsScreen> {
     }
   }
 
+  void _confirmSave(LoraProvider prov) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Konfirmasi Penyimpanan'),
+        content: const Text('Apakah Anda yakin ingin menyimpan perubahan konfigurasi Edge dan LoRa Node ini?'),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.pop(ctx);
+              setState(() {
+                _selectedEcid = prov.savedEcid;
+                _selectedLoraNodes.clear();
+                _selectedLoraNodes.addAll(prov.savedLoraNodes);
+              });
+            },
+            child: const Text('Batal'),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.pop(ctx);
+              _savePairing();
+            },
+            style: ElevatedButton.styleFrom(backgroundColor: AppColors.blue, foregroundColor: Colors.white),
+            child: const Text('OK'),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final prov = context.watch<LoraProvider>();
+    final bool hasChanges = _selectedEcid != prov.savedEcid || !setEquals(_selectedLoraNodes, prov.savedLoraNodes.toSet());
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -249,7 +282,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                             ),
                           const SizedBox(height: 16),
                           ElevatedButton.icon(
-                            onPressed: (_selectedEcid == null || _isSaving) ? null : _savePairing,
+                            onPressed: (_selectedEcid == null || _isSaving || !hasChanges) ? null : () => _confirmSave(prov),
                             icon: _isSaving 
                                 ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2)) 
                                 : const Icon(Icons.save, size: 18),

@@ -38,6 +38,9 @@ class ElogbookSyncService {
   bool _autoEnabled = false;
   int _autoIntervalMin = 5;
 
+  String? edgeEcid;
+  List<String> edgeLoraNodes = [];
+
   // SYNC FEATURE: Variabel untuk menyimpan subscription listener koneksi internet
   StreamSubscription<List<ConnectivityResult>>? _connectivitySubscription;
 
@@ -206,11 +209,34 @@ class ElogbookSyncService {
   Future<(int, int, String?)> _pushBatch(List<LoraRecord> batch) async {
     for (int attempt = 1; attempt <= _maxRetries; attempt++) {
       try {
+        final packetsList = batch.map((r) {
+          final pJson = r.toJson();
+          
+          // Cari SN / identifier Lora Node dari raw_data atau parsed_data
+          String? packetSn;
+          if (pJson['parsed_data'] is Map) {
+            packetSn = pJson['parsed_data']['sn']?.toString() ?? pJson['parsed_data']['dev_eui']?.toString();
+          }
+          if (packetSn == null && pJson['raw_data'] != null) {
+            try {
+              final rawMap = jsonDecode(pJson['raw_data']);
+              packetSn = rawMap['sn']?.toString() ?? rawMap['dev_eui']?.toString() ?? rawMap['data']?['sn']?.toString();
+            } catch (_) {}
+          }
+
+          // Tambahkan ec_id jika sn ada dalam daftar lora node yang diceklis
+          if (packetSn != null && edgeLoraNodes.contains(packetSn) && edgeEcid != null) {
+            pJson['ec_id'] = edgeEcid;
+          }
+
+          return pJson;
+        }).toList();
+
         final body = jsonEncode({
           'source':    'lora_edge',
           'timestamp': DateTime.now().toIso8601String(),
           'count':     batch.length,
-          'packets':   batch.map((r) => r.toJson()).toList(),
+          'packets':   packetsList,
         });
 
         final headers = {
