@@ -101,6 +101,7 @@ class _ApiScreenState extends State<ApiScreen> {
           hint: 'http://192.168.1.4:5000',
           ctrl: _urlCtrl,
           onChanged: prov.setElogbookUrl,
+          enabled: false, // Terkunci ke .env
         ),
         SizedBox(height: 10),
         _labeledField('Endpoint Path',
@@ -226,6 +227,7 @@ class _ApiScreenState extends State<ApiScreen> {
     required TextEditingController ctrl,
     required ValueChanged<String> onChanged,
     bool obscure = false,
+    bool enabled = true,
   }) =>
       Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
         Text(label,
@@ -234,7 +236,8 @@ class _ApiScreenState extends State<ApiScreen> {
         TextField(
           controller: ctrl,
           obscureText: obscure,
-          style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppColors.textPrimary, fontFamily: 'monospace'),
+          enabled: enabled,
+          style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: enabled ? AppColors.textPrimary : AppColors.textSecondary, fontFamily: 'monospace'),
           decoration: InputDecoration(
             hintText: hint,
             hintStyle: TextStyle(fontSize: 12, color: AppColors.textMuted),
