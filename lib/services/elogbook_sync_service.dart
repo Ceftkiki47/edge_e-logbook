@@ -215,18 +215,26 @@ class ElogbookSyncService {
           // Cari SN / identifier Lora Node dari raw_data atau parsed_data
           String? packetSn;
           if (pJson['parsed_data'] is Map) {
-            packetSn = pJson['parsed_data']['sn']?.toString() ?? pJson['parsed_data']['dev_eui']?.toString();
+            packetSn = pJson['parsed_data']['sn']?.toString() ?? 
+                       pJson['parsed_data']['dev_eui']?.toString() ?? 
+                       pJson['parsed_data']['id_perangkat']?.toString();
           }
           if (packetSn == null && pJson['raw_data'] != null) {
             try {
               final rawMap = jsonDecode(pJson['raw_data']);
-              packetSn = rawMap['sn']?.toString() ?? rawMap['dev_eui']?.toString() ?? rawMap['data']?['sn']?.toString();
+              packetSn = rawMap['sn']?.toString() ?? 
+                         rawMap['dev_eui']?.toString() ?? 
+                         rawMap['id_perangkat']?.toString() ?? 
+                         rawMap['data']?['sn']?.toString();
             } catch (_) {}
           }
 
-          // Tambahkan ec_id jika sn ada dalam daftar lora node yang diceklis
-          if (packetSn != null && edgeLoraNodes.contains(packetSn) && edgeEcid != null) {
-            pJson['ec_id'] = edgeEcid;
+          // Tambahkan ec_id dan device_id untuk backend
+          if (packetSn != null) {
+            pJson['device_id'] = packetSn; // backend menggunakan field ini
+            if (edgeLoraNodes.contains(packetSn) && edgeEcid != null) {
+              pJson['ec_id'] = edgeEcid;
+            }
           }
 
           return pJson;

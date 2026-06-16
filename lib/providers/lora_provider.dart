@@ -570,9 +570,17 @@ class LoraProvider extends ChangeNotifier {
         debugPrint(
           'Login HTTP Error: ${response.statusCode} - ${response.body}',
         );
-        if (response.statusCode == 401) {
+        try {
           final data = jsonDecode(response.body);
-          return data['message'] ?? 'Username atau password salah';
+          if (data['message'] != null) {
+            return data['message'];
+          }
+        } catch (_) {}
+        
+        if (response.statusCode == 401) {
+          return 'Username atau password salah';
+        } else if (response.statusCode == 403) {
+          return 'Akses ditolak oleh server.';
         }
         return 'Server error HTTP ${response.statusCode}';
       }
