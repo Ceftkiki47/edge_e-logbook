@@ -172,7 +172,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   )
                 ),
                 _buildCard([
-                  if (_isLoadingDevices)
+                  if (_isLoadingDevices && _edgeDevices.isEmpty)
                     const Padding(
                       padding: EdgeInsets.all(24.0),
                       child: Center(child: CircularProgressIndicator()),
@@ -188,12 +188,17 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       ),
                     )
                   else
-                    Padding(
-                      padding: const EdgeInsets.all(16.0),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
-                        children: [
-                          Text('Pilih Edge Computing (Identitas Desktop Ini):', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: AppColors.textPrimary)),
+                    IgnorePointer(
+                      ignoring: _isLoadingDevices,
+                      child: AnimatedOpacity(
+                        duration: const Duration(milliseconds: 200),
+                        opacity: _isLoadingDevices ? 0.5 : 1.0,
+                        child: Padding(
+                          padding: const EdgeInsets.all(16.0),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                            children: [
+                              Text('Pilih Edge Computing (Identitas Desktop Ini):', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: AppColors.textPrimary)),
                           const SizedBox(height: 8),
                           Row(
                             children: [
