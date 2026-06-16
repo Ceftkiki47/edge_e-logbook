@@ -154,7 +154,23 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 ]),
                 const SizedBox(height: 24),
 
-                _buildSectionHeader(Icons.link, 'Pairing Perangkat (Edge & LoRa)'),
+                _buildSectionHeader(
+                  Icons.link, 
+                  'Pairing Perangkat (Edge & LoRa)',
+                  trailing: TextButton.icon(
+                    onPressed: _isLoadingDevices ? null : _loadDevices,
+                    icon: _isLoadingDevices 
+                        ? const SizedBox(width: 14, height: 14, child: CircularProgressIndicator(strokeWidth: 2))
+                        : const Icon(Icons.refresh, size: 14),
+                    label: const Text('Refresh', style: TextStyle(fontSize: 12)),
+                    style: TextButton.styleFrom(
+                      foregroundColor: AppColors.blue,
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      minimumSize: Size.zero,
+                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                    ),
+                  )
+                ),
                 _buildCard([
                   if (_isLoadingDevices)
                     const Padding(
@@ -263,7 +279,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
-  Widget _buildSectionHeader(IconData icon, String title) {
+  Widget _buildSectionHeader(IconData icon, String title, {Widget? trailing}) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 12, left: 4),
       child: Row(
@@ -271,6 +287,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
           Icon(icon, size: 18, color: AppColors.blue),
           const SizedBox(width: 8),
           Text(title, style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: AppColors.textPrimary)),
+          if (trailing != null) ...[
+            const Spacer(),
+            trailing,
+          ],
         ],
       ),
     );
