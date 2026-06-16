@@ -7,7 +7,8 @@ import '../widgets/status_card.dart';
 import '../widgets/packet_log_card.dart';
 
 class DashboardScreen extends StatelessWidget {
-  const DashboardScreen({super.key});
+  final VoidCallback? onNavigateToPackets;
+  const DashboardScreen({super.key, this.onNavigateToPackets});
 
   @override
   Widget build(BuildContext context) {
@@ -83,7 +84,7 @@ class DashboardScreen extends StatelessWidget {
             SizedBox(height: 14),
 
             // Row 3: Log paket
-            const PacketLogCard(),
+            PacketLogCard(onSeeAll: onNavigateToPackets),
             SizedBox(height: 14),
 
             // Row 4: Footer info

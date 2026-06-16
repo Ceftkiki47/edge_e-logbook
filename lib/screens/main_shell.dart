@@ -17,28 +17,15 @@ class MainShell extends StatefulWidget {
 class _MainShellState extends State<MainShell> {
   int _selectedIndex = 0;
 
-  static const _screens = [
-    DashboardScreen(),       // 0
-    PacketsScreen(),         // 1
-    // PlaceholderScreen(       // 2
-    //   title: 'Kualitas Sinyal',
-    //   icon: Icons.signal_cellular_alt,
-    //   description: 'Grafik kualitas sinyal RSSI & SNR real-time.',
-    // ),
-    DatabaseScreen(),        // 3 -> 2
-    ApiScreen(),             // 4 -> 3
-    PortScreen(),            // 5 -> 4
-    // PlaceholderScreen(       // 6
-    //   title: 'Konfigurasi',
-    //   icon: Icons.settings_outlined,
-    //   description: 'Pengaturan parameter LoRa (SF, BW, CR).',
-    // ),
-    // PlaceholderScreen(       // 7
-    //   title: 'Notifikasi',
-    //   icon: Icons.notifications_outlined,
-    //   description: 'Aturan notifikasi berdasarkan nilai sensor.',
-    // ),
-    SettingsScreen(),        // 8 -> 5
+  late final List<Widget> _screens = [
+    DashboardScreen(onNavigateToPackets: () {
+      setState(() => _selectedIndex = 1);
+    }),                      // 0
+    const PacketsScreen(),         // 1
+    const DatabaseScreen(),        // 2
+    const ApiScreen(),             // 3
+    const PortScreen(),            // 4
+    const SettingsScreen(),        // 5
   ];
 
   @override

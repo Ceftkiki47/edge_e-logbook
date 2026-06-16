@@ -8,7 +8,8 @@ import 'confirm_dialog.dart';
 import '../screens/packets_screen.dart';
 
 class PacketLogCard extends StatelessWidget {
-  const PacketLogCard({super.key});
+  final VoidCallback? onSeeAll;
+  const PacketLogCard({super.key, this.onSeeAll});
 
   @override
   Widget build(BuildContext context) {
@@ -37,7 +38,7 @@ class PacketLogCard extends StatelessWidget {
             const Spacer(),
             Builder(
               builder: (ctx) => OutlinedButton(
-                onPressed: () {
+                onPressed: onSeeAll ?? () {
                   Navigator.push(
                     ctx,
                     MaterialPageRoute(builder: (_) => const PacketsScreen()),
