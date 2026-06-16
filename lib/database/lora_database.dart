@@ -125,10 +125,33 @@ class LoraDatabase {
   Future<int> insertBatch(List<LoraRecord> records) async {
     if (records.isEmpty) return 0;
     final db = await database;
+
+    // Filter duplikat (untuk antisipasi jika sqlite belum memiliki constraint UNIQUE pada versi lama)
+    List<LoraRecord> toInsert = [];
+    
+    // Pecah menjadi chunk 500 agar IN clause tidak error
+    for (var i = 0; i < records.length; i += 500) {
+      final chunk = records.skip(i).take(500).toList();
+      final uuids = chunk.map((r) => r.uuid).toList();
+      final placeholders = List.filled(uuids.length, '?').join(',');
+      
+      final existingRows = await db.query(
+        _table,
+        columns: ['uuid'],
+        where: 'uuid IN ($placeholders)',
+        whereArgs: uuids,
+      );
+      final existingUuids = existingRows.map((r) => r['uuid'] as String).toSet();
+      
+      toInsert.addAll(chunk.where((r) => !existingUuids.contains(r.uuid)));
+    }
+
+    if (toInsert.isEmpty) return 0;
+
     int inserted = 0;
     await db.transaction((txn) async {
       final batch = txn.batch();
-      for (final record in records) {
+      for (final record in toInsert) {
         batch.insert(
           _table,
           record.toMap(),
