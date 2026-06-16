@@ -5,6 +5,7 @@ import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:uuid/uuid.dart';
 import '../database/lora_database.dart';
 import '../api/lora_api_server.dart';
 import '../models/lora_record.dart';
@@ -41,6 +42,7 @@ class LoraProvider extends ChangeNotifier {
 
   String? dbPath;
   String? savedEcid;
+  String? hardwareId;
   List<String> savedLoraNodes = [];
 
   // ── Init ──────────────────────────────────────────────────────────────────
@@ -391,6 +393,14 @@ class LoraProvider extends ChangeNotifier {
         prefs.getString('elogbook_endpoint') ?? '/api/edge/sync/data';
     sync.apiKey = prefs.getString('elogbook_key') ?? '';
     savedEcid = prefs.getString('elogbook_ecid');
+    
+    hardwareId = prefs.getString('hardware_id');
+    if (hardwareId == null) {
+      hardwareId = const Uuid().v4();
+      await prefs.setString('hardware_id', hardwareId!);
+      debugPrint('Generated new Hardware ID: $hardwareId');
+    }
+
     savedLoraNodes = prefs.getStringList('elogbook_lora_nodes') ?? [];
 
     sync.edgeEcid = savedEcid;
@@ -525,7 +535,8 @@ class LoraProvider extends ChangeNotifier {
             body: jsonEncode({
               'username': username,
               'password': password,
-              'platform': 'desktop'
+              'platform': 'desktop',
+              'hardware_id': hardwareId
             }),
           )
           .timeout(const Duration(seconds: 15));
