@@ -205,7 +205,13 @@ class LoraProvider extends ChangeNotifier {
       '$baseUrl/api/edge/available-devices${savedEcid != null ? '?ecid=$savedEcid' : ''}',
     );
     debugPrint('Meminta daftar perangkat dari: $uri');
-    final response = await http.get(uri).timeout(const Duration(seconds: 15));
+    final response = await http.get(
+      uri,
+      headers: {
+        'Accept': 'application/json',
+        if (sync.apiKey.isNotEmpty) 'Authorization': 'Bearer ${sync.apiKey}',
+      },
+    ).timeout(const Duration(seconds: 15));
 
     if (response.statusCode == 200) {
       final json = jsonDecode(response.body);
@@ -230,7 +236,10 @@ class LoraProvider extends ChangeNotifier {
     final response = await http
         .post(
           uri,
-          headers: {'Content-Type': 'application/json'},
+          headers: {
+            'Content-Type': 'application/json',
+            if (sync.apiKey.isNotEmpty) 'Authorization': 'Bearer ${sync.apiKey}',
+          },
           body: jsonEncode({'ecid': ecid, 'lora_nodes': loraNodes}),
         )
         .timeout(const Duration(seconds: 15));
