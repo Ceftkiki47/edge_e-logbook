@@ -388,7 +388,7 @@ class LoraProvider extends ChangeNotifier {
     if (s == 0) return 'Siap menerima data LoRa 433MHz';
     if (s > 70) return 'Penerimaan optimal';
     if (s > 40) return 'Jangkauan cukup';
-    return 'Periksa posisi antena';
+    return 'Periksa koneksi perangkat IoT';
   }
 
   // ── Elogbook Sync ─────────────────────────────────────────────────────────
