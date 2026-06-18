@@ -101,7 +101,7 @@ class PortScreen extends StatelessWidget {
               child: prov.availPorts.isEmpty
                   ? _emptyPortField()
                   : _dropdownField<String>(
-                      value: prov.selectedPort,
+                      value: prov.availPorts.contains(prov.selectedPort) ? prov.selectedPort : null,
                       items: prov.availPorts,
                       label: (p) => p,
                       hint: 'Pilih port...',
