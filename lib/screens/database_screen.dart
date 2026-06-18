@@ -722,7 +722,7 @@ class _DatabaseScreenState extends State<DatabaseScreen> {
 
   Future<void> _confirmDeleteOld(BuildContext ctx, LoraProvider prov) async {
     final targetLabel = _sourceFilter == 'local'
-        ? 'antena lokal'
+        ? 'IoT lokal'
         : _sourceFilter == 'server'
         ? 'server sinkronisasi'
         : 'keseluruhan';
@@ -797,7 +797,7 @@ class _DatabaseScreenState extends State<DatabaseScreen> {
 
   Future<void> _confirmClearAll(BuildContext ctx, LoraProvider prov) async {
     final targetLabel = _sourceFilter == 'local'
-        ? 'Antena'
+        ? 'IoT'
         : _sourceFilter == 'server'
         ? 'Server'
         : 'Semua Data';
