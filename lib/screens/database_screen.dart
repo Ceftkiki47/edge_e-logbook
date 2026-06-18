@@ -139,7 +139,10 @@ class _DatabaseScreenState extends State<DatabaseScreen> {
               ? null
               : () => _confirmDeleteOld(context, prov),
           icon: Icon(Icons.history, size: 16),
-          label: Text('Hapus Data Lama', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600)),
+          label: Text(
+            'Hapus Data Lama',
+            style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
+          ),
         ),
         SizedBox(width: 8),
         OutlinedButton.icon(
@@ -163,9 +166,12 @@ class _DatabaseScreenState extends State<DatabaseScreen> {
               : () => _confirmClearAll(context, prov),
           icon: Icon(Icons.delete_outline, size: 16),
           label: Text(
-            _sourceFilter == 'local' ? 'Hapus Data Antena' :
-            _sourceFilter == 'server' ? 'Hapus Data Server' : 'Hapus Semua Data',
-            style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600)
+            _sourceFilter == 'local'
+                ? 'Hapus Data IoT'
+                : _sourceFilter == 'server'
+                ? 'Hapus Data Server'
+                : 'Hapus Semua Data',
+            style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
           ),
         ),
         SizedBox(width: 8),
@@ -303,7 +309,7 @@ class _DatabaseScreenState extends State<DatabaseScreen> {
       children: [
         _tabButton('Semua Data', 'all', Icons.all_inbox),
         SizedBox(width: 8),
-        _tabButton('Data Antena', 'local', Icons.cell_tower),
+        _tabButton('Data IoT', 'local', Icons.cell_tower),
         SizedBox(width: 8),
         _tabButton('Data Server', 'server', Icons.cloud_download_outlined),
       ],
@@ -411,167 +417,170 @@ class _DatabaseScreenState extends State<DatabaseScreen> {
     return Column(
       children: [
         // Header
-            Container(
-              padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-              color: AppColors.surfaceAlt,
-              child: Row(
-                children: [
-                  Expanded(flex: 45, child: _Th('ID')),
-                  Expanded(flex: 60, child: _Th('Tipe')),
-                  Expanded(flex: 120, child: _Th('Trail')),
-                  Expanded(flex: 60, child: _Th('ID Ikan')),
-                  Expanded(flex: 80, child: _Th('Jenis Ikan')),
-                  Expanded(flex: 75, child: _Th('Lat')),
-                  Expanded(flex: 75, child: _Th('Lng')),
-                  Expanded(flex: 75, child: _Th('Suhu Air')),
-                  Expanded(flex: 85, child: _Th('Kelembapan')),
-                  Expanded(flex: 70, child: _Th('Berat')),
-                  Expanded(flex: 60, child: _Th('Interval')),
-                  Expanded(flex: 120, child: _Th('Waktu')),
-                  Expanded(flex: 40, child: _Th('Sync', center: true)),
-                  Expanded(flex: 35, child: _Th('Aksi', center: true)),
-                ],
-              ),
-            ),
-            Expanded(
-              child: ListView.builder(
-                padding: EdgeInsets.zero,
-                itemCount: _records.length,
-                itemBuilder: (_, i) {
-                  final r = _records[i];
-                  final isEven = i % 2 == 0;
-                  return Container(
-                    padding: EdgeInsets.symmetric(horizontal: 12, vertical: 7),
-                    color: isEven ? AppColors.surface : AppColors.surfaceAlt,
-                    child: Row(
-                      children: [
-                        Expanded(flex: 45, child: _Td('${r.id ?? '-'}')),
-                        Expanded(
-                          flex: 60,
-                          child: Row(
-                            children: [
-                              _TypeBadge(r.packetType),
-                              SizedBox(width: 4),
-                              if (r.source == 'server')
-                                Icon(Icons.cloud_download_outlined, size: 12, color: AppColors.blue)
-                              else
-                                Icon(Icons.cell_tower, size: 12, color: AppColors.onlineSub),
-                            ],
-                          ),
+        Container(
+          padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+          color: AppColors.surfaceAlt,
+          child: Row(
+            children: [
+              Expanded(flex: 45, child: _Th('ID')),
+              Expanded(flex: 60, child: _Th('Tipe')),
+              Expanded(flex: 120, child: _Th('Trail')),
+              Expanded(flex: 60, child: _Th('ID Ikan')),
+              Expanded(flex: 80, child: _Th('Jenis Ikan')),
+              Expanded(flex: 75, child: _Th('Lat')),
+              Expanded(flex: 75, child: _Th('Lng')),
+              Expanded(flex: 75, child: _Th('Suhu Air')),
+              Expanded(flex: 85, child: _Th('Kelembapan')),
+              Expanded(flex: 70, child: _Th('Berat')),
+              Expanded(flex: 60, child: _Th('Interval')),
+              Expanded(flex: 120, child: _Th('Waktu')),
+              Expanded(flex: 40, child: _Th('Sync', center: true)),
+              Expanded(flex: 35, child: _Th('Aksi', center: true)),
+            ],
+          ),
+        ),
+        Expanded(
+          child: ListView.builder(
+            padding: EdgeInsets.zero,
+            itemCount: _records.length,
+            itemBuilder: (_, i) {
+              final r = _records[i];
+              final isEven = i % 2 == 0;
+              return Container(
+                padding: EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+                color: isEven ? AppColors.surface : AppColors.surfaceAlt,
+                child: Row(
+                  children: [
+                    Expanded(flex: 45, child: _Td('${r.id ?? '-'}')),
+                    Expanded(
+                      flex: 60,
+                      child: Row(
+                        children: [
+                          _TypeBadge(r.packetType),
+                          SizedBox(width: 4),
+                          if (r.source == 'server')
+                            Icon(
+                              Icons.cloud_download_outlined,
+                              size: 12,
+                              color: AppColors.blue,
+                            )
+                          else
+                            Icon(
+                              Icons.cell_tower,
+                              size: 12,
+                              color: AppColors.onlineSub,
+                            ),
+                        ],
+                      ),
+                    ),
+                    Expanded(flex: 120, child: _Td(r.trail ?? '—', mono: true)),
+                    Expanded(
+                      flex: 60,
+                      child: _Td(
+                        '${r.idIkan ?? '—'}',
+                        color: AppColors.textSecondary,
+                      ),
+                    ),
+                    Expanded(
+                      flex: 80,
+                      child: _Td(
+                        r.jenisIkan ?? '—',
+                        color: AppColors.textPrimary,
+                      ),
+                    ),
+                    Expanded(
+                      flex: 75,
+                      child: _Td(
+                        r.lat != null ? r.lat!.toStringAsFixed(4) : '—',
+                        color: AppColors.purple,
+                      ),
+                    ),
+                    Expanded(
+                      flex: 75,
+                      child: _Td(
+                        r.lng != null ? r.lng!.toStringAsFixed(4) : '—',
+                        color: AppColors.purple,
+                      ),
+                    ),
+                    Expanded(
+                      flex: 75,
+                      child: _Td(
+                        r.suhuAir != null
+                            ? '${r.suhuAir!.toStringAsFixed(1)} °C'
+                            : '—',
+                        color: AppColors.amber,
+                      ),
+                    ),
+                    Expanded(
+                      flex: 85,
+                      child: _Td(
+                        r.suhuKelembaban != null
+                            ? '${r.suhuKelembaban!.toStringAsFixed(1)} %'
+                            : '—',
+                        color: AppColors.blue,
+                      ),
+                    ),
+                    Expanded(
+                      flex: 70,
+                      child: _Td(
+                        r.berat != null
+                            ? '${r.berat!.toStringAsFixed(1)} kg'
+                            : '—',
+                        color: AppColors.onlineSub,
+                      ),
+                    ),
+                    Expanded(
+                      flex: 60,
+                      child: _Td(r.interval != null ? '${r.interval}s' : '—'),
+                    ),
+                    Expanded(
+                      flex: 120,
+                      child: _Td(fmt.format(r.receivedAt), mono: true),
+                    ),
+                    Expanded(
+                      flex: 40,
+                      child: Align(
+                        alignment: Alignment.center,
+                        child: Icon(
+                          r.syncedToApi
+                              ? Icons.check_circle_outline
+                              : Icons.radio_button_unchecked,
+                          size: 14,
+                          color: r.syncedToApi
+                              ? AppColors.online
+                              : AppColors.textMuted,
                         ),
-                        Expanded(
-                          flex: 120,
-                          child: _Td(r.trail ?? '—', mono: true),
-                        ),
-                        Expanded(
-                          flex: 60,
-                          child: _Td(
-                            '${r.idIkan ?? '—'}',
-                            color: AppColors.textSecondary,
-                          ),
-                        ),
-                        Expanded(
-                          flex: 80,
-                          child: _Td(
-                            r.jenisIkan ?? '—',
-                            color: AppColors.textPrimary,
-                          ),
-                        ),
-                        Expanded(
-                          flex: 75,
-                          child: _Td(
-                            r.lat != null ? r.lat!.toStringAsFixed(4) : '—',
-                            color: AppColors.purple,
-                          ),
-                        ),
-                        Expanded(
-                          flex: 75,
-                          child: _Td(
-                            r.lng != null ? r.lng!.toStringAsFixed(4) : '—',
-                            color: AppColors.purple,
-                          ),
-                        ),
-                        Expanded(
-                          flex: 75,
-                          child: _Td(
-                            r.suhuAir != null
-                                ? '${r.suhuAir!.toStringAsFixed(1)} °C'
-                                : '—',
-                            color: AppColors.amber,
-                          ),
-                        ),
-                        Expanded(
-                          flex: 85,
-                          child: _Td(
-                            r.suhuKelembaban != null
-                                ? '${r.suhuKelembaban!.toStringAsFixed(1)} %'
-                                : '—',
+                      ),
+                    ),
+                    Expanded(
+                      flex: 35,
+                      child: Align(
+                        alignment: Alignment.center,
+                        child: IconButton(
+                          icon: Icon(
+                            Icons.remove_red_eye_outlined,
+                            size: 16,
                             color: AppColors.blue,
                           ),
-                        ),
-                        Expanded(
-                          flex: 70,
-                          child: _Td(
-                            r.berat != null
-                                ? '${r.berat!.toStringAsFixed(1)} kg'
-                                : '—',
-                            color: AppColors.onlineSub,
+                          padding: EdgeInsets.zero,
+                          constraints: const BoxConstraints(),
+                          tooltip: 'Detail & Hapus',
+                          onPressed: () => _showDetailCard(
+                            context,
+                            context.read<LoraProvider>(),
+                            r,
                           ),
                         ),
-                        Expanded(
-                          flex: 60,
-                          child: _Td(
-                            r.interval != null ? '${r.interval}s' : '—',
-                          ),
-                        ),
-                        Expanded(
-                          flex: 120,
-                          child: _Td(fmt.format(r.receivedAt), mono: true),
-                        ),
-                        Expanded(
-                          flex: 40,
-                          child: Align(
-                            alignment: Alignment.center,
-                            child: Icon(
-                              r.syncedToApi
-                                  ? Icons.check_circle_outline
-                                  : Icons.radio_button_unchecked,
-                              size: 14,
-                              color: r.syncedToApi
-                                  ? AppColors.online
-                                  : AppColors.textMuted,
-                            ),
-                          ),
-                        ),
-                        Expanded(
-                          flex: 35,
-                          child: Align(
-                            alignment: Alignment.center,
-                            child: IconButton(
-                              icon: Icon(
-                                Icons.remove_red_eye_outlined,
-                                size: 16,
-                                color: AppColors.blue,
-                              ),
-                              padding: EdgeInsets.zero,
-                              constraints: const BoxConstraints(),
-                              tooltip: 'Detail & Hapus',
-                              onPressed: () => _showDetailCard(
-                                context,
-                                context.read<LoraProvider>(),
-                                r,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ],
+                      ),
                     ),
-                  );
-                },
-              ),
-            ),
-          ],
-        );
+                  ],
+                ),
+              );
+            },
+          ),
+        ),
+      ],
+    );
   }
 
   Widget _pagination(LoraProvider prov) {
@@ -712,7 +721,11 @@ class _DatabaseScreenState extends State<DatabaseScreen> {
   );
 
   Future<void> _confirmDeleteOld(BuildContext ctx, LoraProvider prov) async {
-    final targetLabel = _sourceFilter == 'local' ? 'antena lokal' : _sourceFilter == 'server' ? 'server sinkronisasi' : 'keseluruhan';
+    final targetLabel = _sourceFilter == 'local'
+        ? 'antena lokal'
+        : _sourceFilter == 'server'
+        ? 'server sinkronisasi'
+        : 'keseluruhan';
     final sourceParam = _sourceFilter == 'all' ? null : _sourceFilter;
 
     int days = 30;
@@ -721,7 +734,8 @@ class _DatabaseScreenState extends State<DatabaseScreen> {
     final ok = await showConfirmDialog(
       ctx,
       title: 'Hapus Data Lama',
-      message: 'Pilih rentang waktu. Data $targetLabel yang lebih lama dari batas yang dipilih akan dihapus permanen dari database.',
+      message:
+          'Pilih rentang waktu. Data $targetLabel yang lebih lama dari batas yang dipilih akan dihapus permanen dari database.',
       confirmLabel: 'Hapus',
       level: ConfirmLevel.warning,
       countLabel: '$total total data tersimpan di database',
@@ -782,14 +796,19 @@ class _DatabaseScreenState extends State<DatabaseScreen> {
   }
 
   Future<void> _confirmClearAll(BuildContext ctx, LoraProvider prov) async {
-    final targetLabel = _sourceFilter == 'local' ? 'Antena' : _sourceFilter == 'server' ? 'Server' : 'Semua Data';
+    final targetLabel = _sourceFilter == 'local'
+        ? 'Antena'
+        : _sourceFilter == 'server'
+        ? 'Server'
+        : 'Semua Data';
     final sourceParam = _sourceFilter == 'all' ? null : _sourceFilter;
 
     final total = prov.stats?.totalPackets ?? 0;
     final ok = await showConfirmDialog(
       ctx,
       title: 'Hapus $targetLabel',
-      message: 'Seluruh data $targetLabel di database lokal akan dihapus secara permanen dan tidak dapat dikembalikan.',
+      message:
+          'Seluruh data $targetLabel di database lokal akan dihapus secara permanen dan tidak dapat dikembalikan.',
       confirmLabel: 'Hapus $targetLabel',
       level: ConfirmLevel.danger,
       countLabel: '$total paket akan dihapus permanen',
@@ -1098,16 +1117,26 @@ class _HoverBtnState extends State<_HoverBtn> {
           decoration: BoxDecoration(
             color: widget.isActive
                 ? AppColors.blueBg
-                : (_isHovered && canTap ? AppColors.surfaceAlt : Colors.transparent),
+                : (_isHovered && canTap
+                      ? AppColors.surfaceAlt
+                      : Colors.transparent),
             borderRadius: BorderRadius.circular(4),
             border: Border.all(
               color: widget.isActive
                   ? AppColors.blue
-                  : (_isHovered && canTap ? AppColors.border : Colors.transparent),
+                  : (_isHovered && canTap
+                        ? AppColors.border
+                        : Colors.transparent),
               width: 0.5,
             ),
             boxShadow: (_isHovered && canTap && !widget.isActive)
-                ? [BoxShadow(color: Colors.black26, blurRadius: 4, offset: Offset(0, 2))]
+                ? [
+                    BoxShadow(
+                      color: Colors.black26,
+                      blurRadius: 4,
+                      offset: Offset(0, 2),
+                    ),
+                  ]
                 : null,
           ),
           child: widget.child,
