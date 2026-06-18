@@ -11,7 +11,7 @@ DisableProgramGroupPage=yes
 
 ; Nama file installer yang dihasilkan
 OutputDir=build\windows\x64\installer
-OutputBaseFilename=ELogbook_Installer
+OutputBaseFilename=ELogbook Installer
 
 ; Konfigurasi Kompresi
 Compression=lzma
@@ -19,7 +19,7 @@ SolidCompression=yes
 
 ; Tampilan Installer
 SetupIconFile=windows\runner\resources\app_icon.ico
-UninstallDisplayIcon={app}\elogbook_desktop.exe
+UninstallDisplayIcon={app}\Edge Computing Elogbook.exe
 
 ; Hak akses instalasi
 PrivilegesRequired=admin
