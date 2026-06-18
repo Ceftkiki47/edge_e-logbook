@@ -2,11 +2,11 @@
 ; Informasi Utama Aplikasi
 AppName=E-Logbook LoRa Monitor
 AppVersion=1.0
-AppPublisher=Divo Satria
+AppPublisher=Satria Divo
 AppPublisherURL=https://github.com/divosatria/elogbook
 
 ; Default folder instalasi (Program Files)
-DefaultDirName={autopf}\ELogbook_LoRa_Monitor
+DefaultDirName={autopf}\ELogbook LoRa Monitor
 DisableProgramGroupPage=yes
 
 ; Nama file installer yang dihasilkan
